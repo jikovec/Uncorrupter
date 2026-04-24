@@ -1,4 +1,4 @@
-from pathlib import Path
+from io import BytesIO
 
 from PIL import Image
 
@@ -8,11 +8,9 @@ from file_uncorrupter.intake import build_file_record
 
 def make_jpeg_bytes() -> bytes:
     image = Image.new("RGB", (32, 32), (123, 100, 80))
-    path = Path("/tmp/sample.jpg")
-    image.save(path, format="JPEG", quality=85)
-    data = path.read_bytes()
-    path.unlink(missing_ok=True)
-    return data
+    buffer = BytesIO()
+    image.save(buffer, format="JPEG", quality=85)
+    return buffer.getvalue()
 
 
 def test_classifies_missing_eoi_as_jpeg_missing_eoi(tmp_path):

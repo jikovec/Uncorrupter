@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "file-uncorrupter"
-version = "0.1.0"
-description = "Batch recovery framework for corrupted images, starting with JPEG-first triage and repair."
+version = "0.3.0"
+description = "Offline-first corrupted media recovery framework with evidence tracking, deep JPEG repair, and baseline video salvage."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{name = "OpenAI"}]

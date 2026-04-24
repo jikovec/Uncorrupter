@@ -1,68 +1,59 @@
 # File Uncorrupter
 
-File Uncorrupter is a recovery-oriented batch framework for corrupted image files.
+File Uncorrupter is an offline-first corrupted visual-media recovery framework.
 
-This initial repository version restructures the project away from a single script into a modular CLI application with:
+This wave moves the repository from a JPEG-only recovery pipeline toward the research blueprint's required shape:
 
-- intake and manifesting
-- JPEG-first triage and classification
-- pluggable recovery engines
-- decoder adapters
-- SQLite-backed experiment tracking
-- structured reporting
-- preserved legacy prototype code for reference
+- media-generic intake and signature indexing
+- signatures detected anywhere in the blob, not only at byte 0
+- richer SQLite evidence model for signatures, candidates, attempts, and multi-artifact outputs
+- workspace layout with config snapshots and content-addressed blob storage hooks
+- deeper JPEG repair with scattered-segment header rebuild and standard-DHT injection
+- baseline FFmpeg-driven video/container probing and salvage
+- benchmark command for repeatable local regression runs
 
 ## Current scope
-
-The current implementation is intentionally JPEG-first because the existing project evidence shows that nearly all observed files are declared JPEG and that the dominant failure patterns are JPEG structural failures rather than generic image-decoder failures.
 
 Implemented now:
 
 - `scan` command
 - `classify` command
 - `recover` command
+- `benchmark` command
 - `report` command
-- SQLite run database
-- `jpeg-v1` recovery engine
-- Pillow decoder adapter
-- optional FFmpeg decoder adapter if available
+- workspace layout with local config snapshots
+- anywhere-signature scanning for image and video/container families
+- evidence-rich SQLite run database
+- `jpeg-v1` deepened engine
+- `baseline-v2` media-generic engine
+- Pillow decoder adapter for still images
+- FFmpeg/ffprobe-based baseline probing for image/video salvage
 - raw winning-candidate persistence
-- legacy prototype snapshot under `src/file_uncorrupter/legacy/`
-
-Planned next:
-
-- stronger JPEG segment parser
-- deeper restart-marker resynchronization
-- native repair core
-- per-strategy benchmark dashboards
-- expansion beyond JPEG-first recovery
-
-## Install
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # on Windows: .venv\Scripts\activate
-pip install -e .
-```
 
 ## Commands
 
 ### Scan
 
 ```bash
-file-uncorrupter scan /path/to/input --recursive --db runs.sqlite3
+file-uncorrupter scan /path/to/input --recursive --all-files --db runs.sqlite3
 ```
 
 ### Classify
 
 ```bash
-file-uncorrupter classify /path/to/input --recursive --db runs.sqlite3
+file-uncorrupter classify /path/to/input --recursive --all-files --db runs.sqlite3
 ```
 
 ### Recover
 
 ```bash
-file-uncorrupter recover /path/to/input /path/to/output --recursive --db runs.sqlite3 --save-raw-candidates
+file-uncorrupter recover /path/to/input /path/to/output --recursive --all-files --db runs.sqlite3 --save-raw-candidates
+```
+
+### Benchmark
+
+```bash
+file-uncorrupter benchmark /path/to/input /path/to/output --recursive --all-files --db runs.sqlite3 --output-json benchmark.json --output-csv attempts.csv
 ```
 
 ### Report
@@ -71,18 +62,9 @@ file-uncorrupter recover /path/to/input /path/to/output --recursive --db runs.sq
 file-uncorrupter report --db runs.sqlite3 --run-id 1 --output-json report.json --output-csv attempts.csv
 ```
 
-## Output layout
+## Output notes
 
-Recovery output is written into the chosen output directory.
-
-When `--save-raw-candidates` is used, the winning candidate bytes are also stored under:
-
-- `<output>/_raw_candidates/<relative-file-path>.candidate`
-
-This keeps structural artifacts separate from normalized exports.
-
-## Notes
-
-- FFmpeg is optional. If present on PATH, it is used as a secondary decoder.
-- The current engine does not assume the extension is absolute truth. Extension, header, and marker evidence are all considered.
-- The legacy script is preserved for comparison, but the new codepath is the main path going forward.
+- Still-image outputs are normalized to the declared/detected image family where possible.
+- Video/container outputs are normalized to robust local artifacts, usually MKV remuxes plus preview frames when FFmpeg can decode them.
+- Raw winning candidates are stored under `<output>/_raw_candidates/...` when enabled.
+- Workspace state defaults to `<output>/.uncorrupter-workspace/` for recover/benchmark and to the DB directory for scan/classify, unless `--workspace-root` is provided.

@@ -4,30 +4,42 @@ from pathlib import Path
 from typing import Iterable
 
 from .classification import classify_record
-from .db import insert_attempt, insert_file, insert_output
-from .decoders import ffmpeg_available, probe_with_ffmpeg, probe_with_pillow, save_with_ffmpeg, save_with_pillow
+from .constants import VIDEO_KINDS
+from .db import insert_attempt, insert_candidate, insert_file, insert_output
+from .decoders import (
+    ffmpeg_available,
+    normalized_video_output_path,
+    probe_video_with_ffmpeg,
+    probe_with_ffmpeg,
+    probe_with_pillow,
+    recover_video_with_ffmpeg,
+    save_with_ffmpeg,
+    save_with_pillow,
+    sha256_path,
+)
 from .engines import build_registry
 from .intake import build_file_record, iter_input_files, read_bytes
 from .scoring import score_candidate
-from .types import Candidate, Classification, DecodeResult, FileRecord, RecoveryOutcome
+from .types import Artifact, Candidate, Classification, DecodeResult, FileRecord, RecoveryOutcome
 
 
-def _output_kind(record: FileRecord, classification: Classification) -> str:
-    if record.declared_kind:
+def _image_output_kind(record: FileRecord, classification: Classification) -> str:
+    if record.declared_kind and record.declared_kind not in VIDEO_KINDS:
         return record.declared_kind
-    if record.byte0_kind != "unknown":
+    if record.byte0_kind != "unknown" and record.byte0_kind not in VIDEO_KINDS:
         return record.byte0_kind
-    if classification.family != "unknown":
+    if classification.family != "unknown" and classification.family not in VIDEO_KINDS:
         return classification.family
     return "png"
 
 
 class RecoveryPipeline:
-    def __init__(self, engine_name: str = "jpeg-v1") -> None:
+    def __init__(self, engine_name: str = "baseline-v2", *, max_ffmpeg_candidates: int = 12) -> None:
         registry = build_registry()
         if engine_name not in registry:
             raise ValueError(f"Unknown engine: {engine_name}")
         self.engine = registry[engine_name]
+        self.max_ffmpeg_candidates = max_ffmpeg_candidates
 
     def scan_records(self, input_root: Path, recursive: bool, all_files: bool) -> list[tuple[FileRecord, bytes]]:
         records: list[tuple[FileRecord, bytes]] = []
@@ -59,67 +71,93 @@ class RecoveryPipeline:
         candidates = self.engine.generate_candidates(record, data, classification)
         best_candidate: Candidate | None = None
         best_probe: DecodeResult | None = None
+        best_attempt_phase = "probe"
         attempts: list[dict[str, object]] = []
 
         for candidate in candidates:
-            pillow_probe = probe_with_pillow(candidate.data)
-            pillow_probe.score = score_candidate(candidate, pillow_probe, classification)
+            if classification.family in VIDEO_KINDS:
+                probe = probe_video_with_ffmpeg(candidate.data, candidate.family)
+                phase = "video_probe"
+            else:
+                probe = probe_with_pillow(candidate.data)
+                phase = "image_probe"
+            probe.score = score_candidate(candidate, probe, classification)
             attempts.append(
                 {
-                    "strategy_id": candidate.strategy_id,
-                    "family": candidate.family,
-                    "priority": candidate.priority,
-                    "meta": candidate.meta,
-                    "decoder": pillow_probe.decoder,
-                    "ok": pillow_probe.ok,
-                    "width": pillow_probe.width,
-                    "height": pillow_probe.height,
-                    "mode": pillow_probe.mode,
-                    "decoded_format": pillow_probe.decoded_format,
-                    "score": pillow_probe.score,
-                    "error": pillow_probe.error,
+                    "candidate": candidate,
+                    "decoder": probe.decoder,
+                    "phase": phase,
+                    "ok": probe.ok,
+                    "width": probe.width,
+                    "height": probe.height,
+                    "mode": probe.mode,
+                    "decoded_format": probe.decoded_format,
+                    "duration_ms": probe.duration_ms,
+                    "frame_count": probe.frame_count,
+                    "score": probe.score,
+                    "error": probe.error,
+                    "telemetry": probe.telemetry,
                 }
             )
-            if pillow_probe.ok and (best_probe is None or pillow_probe.score > best_probe.score):
+            if probe.ok and (best_probe is None or probe.score > best_probe.score):
                 best_candidate = candidate
-                best_probe = pillow_probe
+                best_probe = probe
+                best_attempt_phase = phase
 
-        if ffmpeg_available() and best_candidate is None:
-            for candidate in candidates[:6]:
+        if classification.family not in VIDEO_KINDS and ffmpeg_available() and best_candidate is None:
+            for candidate in candidates[: self.max_ffmpeg_candidates]:
                 ffmpeg_probe = probe_with_ffmpeg(candidate.data, candidate.family)
                 ffmpeg_probe.score = score_candidate(candidate, ffmpeg_probe, classification)
                 attempts.append(
                     {
-                        "strategy_id": candidate.strategy_id,
-                        "family": candidate.family,
-                        "priority": candidate.priority,
-                        "meta": candidate.meta,
+                        "candidate": candidate,
                         "decoder": ffmpeg_probe.decoder,
+                        "phase": "image_probe_ffmpeg",
                         "ok": ffmpeg_probe.ok,
                         "width": ffmpeg_probe.width,
                         "height": ffmpeg_probe.height,
                         "mode": ffmpeg_probe.mode,
                         "decoded_format": ffmpeg_probe.decoded_format,
+                        "duration_ms": ffmpeg_probe.duration_ms,
+                        "frame_count": ffmpeg_probe.frame_count,
                         "score": ffmpeg_probe.score,
                         "error": ffmpeg_probe.error,
+                        "telemetry": ffmpeg_probe.telemetry,
                     }
                 )
                 if ffmpeg_probe.ok and (best_probe is None or ffmpeg_probe.score > best_probe.score):
                     best_candidate = candidate
                     best_probe = ffmpeg_probe
+                    best_attempt_phase = "image_probe_ffmpeg"
 
         if best_candidate is None or best_probe is None or not best_probe.ok:
             decode = DecodeResult(ok=False, decoder="none", error="no_candidate_succeeded")
             return RecoveryOutcome(candidate=None, decode=decode, attempts=attempts), None
 
-        output_kind = _output_kind(record, classification)
-        output_path = output_root / record.relative_path
         raw_candidate_path: Path | None = None
+        artifacts: list[Artifact] = []
+        final_attempt_phase = best_attempt_phase + "_final"
 
-        final = save_with_pillow(best_candidate.data, output_path, output_kind)
-        if not final.ok and ffmpeg_available():
-            final = save_with_ffmpeg(best_candidate.data, best_candidate.family, output_path, output_kind)
-
+        if classification.family in VIDEO_KINDS:
+            output_path = normalized_video_output_path(output_root, record.relative_path, classification.family)
+            final, artifacts = recover_video_with_ffmpeg(best_candidate.data, best_candidate.family, output_path)
+        else:
+            output_kind = _image_output_kind(record, classification)
+            output_path = output_root / record.relative_path
+            final = save_with_pillow(best_candidate.data, output_path, output_kind)
+            if not final.ok and ffmpeg_available():
+                final = save_with_ffmpeg(best_candidate.data, best_candidate.family, output_path, output_kind)
+            if final.ok and final.output_path is not None and final.output_path.exists():
+                artifacts = [
+                    Artifact(
+                        artifact_type="image",
+                        path=final.output_path,
+                        sha256=sha256_path(final.output_path),
+                        decoder=final.decoder,
+                        width=final.width,
+                        height=final.height,
+                    )
+                ]
         final.score = score_candidate(best_candidate, final, classification) if final.ok else float("-inf")
 
         if final.ok and save_raw_candidates:
@@ -128,7 +166,25 @@ class RecoveryPipeline:
             raw_candidate_path = raw_candidate_path.with_suffix(raw_candidate_path.suffix + ".candidate")
             raw_candidate_path.write_bytes(best_candidate.data)
 
-        return RecoveryOutcome(candidate=best_candidate, decode=final, attempts=attempts), raw_candidate_path
+        attempts.append(
+            {
+                "candidate": best_candidate,
+                "decoder": final.decoder,
+                "phase": final_attempt_phase,
+                "ok": final.ok,
+                "width": final.width,
+                "height": final.height,
+                "mode": final.mode,
+                "decoded_format": final.decoded_format,
+                "duration_ms": final.duration_ms,
+                "frame_count": final.frame_count,
+                "score": final.score,
+                "error": final.error,
+                "telemetry": final.telemetry,
+            }
+        )
+
+        return RecoveryOutcome(candidate=best_candidate, decode=final, attempts=attempts, artifacts=artifacts), raw_candidate_path
 
     def persist_scan(self, conn, run_id: int, classified: list[tuple[FileRecord, bytes, Classification]]) -> list[tuple[int, FileRecord, bytes, Classification]]:
         rows: list[tuple[int, FileRecord, bytes, Classification]] = []
@@ -138,14 +194,12 @@ class RecoveryPipeline:
         return rows
 
     def persist_recovery(self, conn, run_id: int, file_id: int, outcome: RecoveryOutcome, raw_candidate_path: Path | None) -> None:
+        winning_attempt_id: int | None = None
         for attempt in outcome.attempts:
-            candidate = Candidate(
-                strategy_id=str(attempt["strategy_id"]),
-                family=str(attempt["family"]),
-                priority=int(attempt["priority"]),
-                data=b"",
-                meta=dict(attempt.get("meta") or {}),
-            )
+            candidate = attempt.get("candidate")
+            candidate_id = None
+            if isinstance(candidate, Candidate):
+                candidate_id = insert_candidate(conn, run_id, file_id, candidate)
             decode = DecodeResult(
                 ok=bool(attempt["ok"]),
                 decoder=str(attempt["decoder"]),
@@ -153,8 +207,21 @@ class RecoveryPipeline:
                 height=int(attempt.get("height") or 0),
                 mode=str(attempt.get("mode") or ""),
                 decoded_format=str(attempt.get("decoded_format") or ""),
-                score=float(attempt["score"]),
-                error=str(attempt["error"] or ""),
+                duration_ms=int(attempt.get("duration_ms") or 0),
+                frame_count=int(attempt.get("frame_count") or 0),
+                score=float(attempt.get("score") or float("-inf")),
+                error=str(attempt.get("error") or ""),
+                telemetry=dict(attempt.get("telemetry") or {}),
             )
-            insert_attempt(conn, run_id, file_id, candidate, decode)
-        insert_output(conn, run_id, file_id, outcome.candidate, outcome.decode, raw_candidate_path)
+            attempt_id = insert_attempt(conn, run_id, file_id, candidate_id, decode, phase=str(attempt.get("phase") or "probe"))
+            if outcome.candidate is not None and isinstance(candidate, Candidate) and candidate.dedupe_hash == outcome.candidate.dedupe_hash and str(attempt.get("phase") or "").endswith("_final"):
+                winning_attempt_id = attempt_id
+
+        if outcome.decode.ok:
+            if outcome.artifacts:
+                for artifact in outcome.artifacts:
+                    insert_output(conn, run_id, file_id, winning_attempt_id, outcome.candidate, outcome.decode, artifact, raw_candidate_path)
+            else:
+                insert_output(conn, run_id, file_id, winning_attempt_id, outcome.candidate, outcome.decode, None, raw_candidate_path)
+        else:
+            insert_output(conn, run_id, file_id, winning_attempt_id, outcome.candidate, outcome.decode, None, raw_candidate_path)

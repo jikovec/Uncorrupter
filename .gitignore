@@ -9,5 +9,3 @@ __pycache__/
 build/
 dist/
 *.egg-info/
-results/
-.git/

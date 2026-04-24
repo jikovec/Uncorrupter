@@ -21,19 +21,12 @@ from .constants import (
     TIFF_LE,
     WEBP,
 )
+from .signature_index import find_all
 from .types import Classification, FileRecord
 
 
-def find_all(data: bytes, needle: bytes) -> list[int]:
-    positions: list[int] = []
-    start = 0
-    while True:
-        idx = data.find(needle, start)
-        if idx == -1:
-            break
-        positions.append(idx)
-        start = idx + 1
-    return positions
+ISOBMFF_FAMILIES = {"mp4", "mov", "heif", "avif", "jp2"}
+VIDEO_FAMILIES = {"mp4", "mov", "avi", "mkv", "webm", "mpegts", "mpegps", "flv", "asf", "wmv"}
 
 
 def jpeg_marker_stats(data: bytes) -> dict[str, int]:
@@ -86,13 +79,38 @@ def other_marker_stats(data: bytes) -> dict[str, dict[str, int]]:
     }
 
 
+def _generic_evidence(record: FileRecord, jpeg_stats: dict[str, int], auxiliary: dict[str, dict[str, int]]) -> dict[str, object]:
+    return {
+        "declared_kind": record.declared_kind,
+        "byte0_kind": record.byte0_kind,
+        "anywhere_kind": record.anywhere_kind,
+        "signature_summary": record.signature_summary,
+        "signature_hits": [
+            {
+                "family": hit.family,
+                "signature_type": hit.signature_type,
+                "offset": hit.offset,
+                "confidence": hit.confidence,
+            }
+            for hit in record.signature_hits[:32]
+        ],
+        "jpeg": jpeg_stats,
+        **auxiliary,
+    }
+
+
 def classify_record(record: FileRecord, data: bytes) -> Classification:
     jpeg_stats = jpeg_marker_stats(data)
     auxiliary = other_marker_stats(data)
+    evidence = _generic_evidence(record, jpeg_stats, auxiliary)
 
     declared_jpeg = record.declared_kind == "jpeg"
     byte0_jpeg = record.byte0_kind == "jpeg"
-    internal_jpeg = jpeg_stats["internal_marker_count"] > 0
+    strong_anywhere_jpeg = any(hit.family == "jpeg" for hit in record.signature_hits)
+    internal_jpeg = strong_anywhere_jpeg or (
+        jpeg_stats["sos_count"] > 0
+        and (jpeg_stats["dqt_count"] > 0 or jpeg_stats["dht_count"] > 0 or jpeg_stats["sof_count"] > 0 or jpeg_stats["rst_count"] > 0)
+    )
 
     jpeg_evidence = 0.0
     if declared_jpeg:
@@ -126,40 +144,33 @@ def classify_record(record: FileRecord, data: bytes) -> Classification:
         else:
             label = "jpeg_low_signal"
             confidence = max(jpeg_evidence, 0.5)
+        return Classification(family="jpeg", label=label, confidence=round(confidence, 4), evidence=evidence)
 
-        return Classification(
-            family="jpeg",
-            label=label,
-            confidence=round(confidence, 4),
-            evidence={
-                "declared_kind": record.declared_kind,
-                "byte0_kind": record.byte0_kind,
-                "jpeg": jpeg_stats,
-                **auxiliary,
-            },
-        )
+    inferred_family = record.anywhere_kind if record.anywhere_kind != "unknown" else (record.byte0_kind if record.byte0_kind != "unknown" else record.declared_kind)
+
+    if inferred_family in ISOBMFF_FAMILIES:
+        label = "isobmff_signature_away_from_byte0" if record.byte0_kind == "unknown" and record.anywhere_kind in ISOBMFF_FAMILIES else "isobmff_container_candidate"
+        return Classification(family=inferred_family, label=label, confidence=0.82 if "away" in label else 0.72, evidence=evidence)
+
+    if inferred_family in {"mkv", "webm"}:
+        label = "ebml_signature_away_from_byte0" if record.byte0_kind == "unknown" and record.anywhere_kind in {"mkv", "webm"} else "ebml_container_candidate"
+        return Classification(family=inferred_family, label=label, confidence=0.8 if "away" in label else 0.7, evidence=evidence)
+
+    if inferred_family == "avi":
+        label = "riff_avi_signature_away_from_byte0" if record.byte0_kind == "unknown" and record.anywhere_kind == "avi" else "riff_avi_candidate"
+        return Classification(family="avi", label=label, confidence=0.79 if "away" in label else 0.69, evidence=evidence)
+
+    if inferred_family == "mpegts":
+        label = "mpegts_desync_or_partial_packets" if record.byte0_kind != "mpegts" else "mpegts_candidate"
+        return Classification(family="mpegts", label=label, confidence=0.86 if "desync" in label else 0.75, evidence=evidence)
+
+    if inferred_family in {"mpegps", "flv", "asf", "wmv"}:
+        return Classification(family=inferred_family, label=f"{inferred_family}_container_candidate", confidence=0.7, evidence=evidence)
+
+    if inferred_family in {"png", "gif", "bmp", "tiff", "webp", "heif", "avif", "jp2", "raw"}:
+        return Classification(family=inferred_family, label=f"{inferred_family}_detected_candidate", confidence=0.65, evidence=evidence)
 
     if record.declared_kind:
-        return Classification(
-            family=record.declared_kind,
-            label=f"{record.declared_kind}_declared_only",
-            confidence=0.55,
-            evidence={
-                "declared_kind": record.declared_kind,
-                "byte0_kind": record.byte0_kind,
-                "jpeg": jpeg_stats,
-                **auxiliary,
-            },
-        )
+        return Classification(family=record.declared_kind, label=f"{record.declared_kind}_declared_only", confidence=0.55, evidence=evidence)
 
-    return Classification(
-        family="unknown",
-        label="unknown_low_signal",
-        confidence=0.2,
-        evidence={
-            "declared_kind": record.declared_kind,
-            "byte0_kind": record.byte0_kind,
-            "jpeg": jpeg_stats,
-            **auxiliary,
-        },
-    )
+    return Classification(family="unknown", label="unknown_low_signal", confidence=0.2, evidence=evidence)

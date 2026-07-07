@@ -1,5 +1,7 @@
 # Uncorrupter Master Research and Architecture Blueprint
 
+> Archive note, 2026-07-07: this report was moved from `DOCUMENTATION/001 deep-research-report.md` into the reports archive. It is preserved as historical research and planning evidence. For current implementation facts, prefer the repo source, tests, and the current documentation index at [../../INDEX.md](../../INDEX.md).
+
 ## Current-state diagnosis and project analysis
 
 **What follows treats the uploaded materials as primary evidence** (the monolithic `a.py`, the modular repo in `Uncorrupter.zip`, and the run evidence in `recover_summary.json` plus the accompanying reports). Where an exact behaviour is inferred from the run evidence rather than explicitly visible in the uploaded source, it is marked as such.
@@ -117,10 +119,10 @@ This section focuses on **mechanisms** that materially affect recoverability, no
 
 **Critical limitation (must shape Uncorrupter’s architecture).** Classic carving assumes contiguous data; fragmentation breaks naive header→footer extraction. Forensic literature is explicit that fragmentation reassembly is a core unsolved problem for basic carvers, motivating object validation and smarter methods. citeturn9search6turn9search2
 
-**Object validation as a design pillar.** Garfinkel’s DFRWS work formalises “object validation” as determining whether sequences of bytes represent valid target objects, improving carving especially in the presence of fragmentation and noise. citeturn9search2turn9search6  
+**Object validation as a design pillar.** Garfinkel’s DFRWS work formalises “object validation” as determining whether sequences of bytes represent valid target objects, improving carving especially in the presence of fragmentation and noise. citeturn9search2turn9search6
 **Adopt for Uncorrupter:** treat decoders/parsers/scorers as validation oracles in a systematic pipeline.
 
-**Fragmentation-point detection: JPEG-specific advances.** Modern work on deterministic JPEG fragmentation point detection suggests you can identify valid continuation blocks at bit-level with high accuracy, which is directly relevant if your corruption involves internal truncation/reordering. citeturn2search12turn2search8  
+**Fragmentation-point detection: JPEG-specific advances.** Modern work on deterministic JPEG fragmentation point detection suggests you can identify valid continuation blocks at bit-level with high accuracy, which is directly relevant if your corruption involves internal truncation/reordering. citeturn2search12turn2search8
 **Adopt for Uncorrupter:** a “fragment graph” strategy for JPEG that can propose concatenations and validate them via decoder success.
 
 ### Damaged image repair and decoder-assisted salvage
@@ -139,24 +141,24 @@ This section focuses on **mechanisms** that materially affect recoverability, no
 
 **WebP: RIFF container constraints.**
 
-- WebP is RIFF-based and supports lossy/lossless/extended variants; the container structure and chunk ordering matter for renderability. citeturn3search2turn3search6turn3search18  
+- WebP is RIFF-based and supports lossy/lossless/extended variants; the container structure and chunk ordering matter for renderability. citeturn3search2turn3search6turn3search18
 **Adopt:** For RIFF-like formats, implement “size-field repair” + chunk scanning + subtype-aware validation (VP8/VP8L/VP8X).
 
 **TIFF: IFD/offset integrity is everything.**
 
-- TIFF is IFD-driven; strip offsets and tag structures define where pixel data lives. citeturn4search0turn4search8  
+- TIFF is IFD-driven; strip offsets and tag structures define where pixel data lives. citeturn4search0turn4search8
 **Adopt:** Repair often means rebuilding/repairing IFD chains and strip/tile offset tables, not decoding compressed pixels first.
 
 **Modern still-image containers (HEIF/AVIF).**
 
 - entity["organization","libheif","heif avif codec library"] is a decoder/encoder for HEIF and AVIF; HEIC typically uses HEVC, AVIF uses AV1. citeturn7search0
-- The AVIF specification explicitly states that AVIF stores AV1 images in HEIF, which is based on ISOBMFF. citeturn7search1turn7search5turn7search9  
+- The AVIF specification explicitly states that AVIF stores AV1 images in HEIF, which is based on ISOBMFF. citeturn7search1turn7search5turn7search9
 **Adopt:** Treat HEIC/AVIF as “ISOBMFF + codec payload”, so many MP4/MOV repair mechanisms apply.
 
 **JPEG 2000 and RAW-family support.**
 
 - JPEG 2000 decoding typically relies on libraries like OpenJPEG; codestream parsing is marker-driven (analogous to JPEG but different structure). citeturn7search10turn7search2
-- entity["organization","LibRaw","raw image decoding library"] supports many RAW formats and is designed for embedding in converters/analyzers. citeturn7search3turn7search7  
+- entity["organization","LibRaw","raw image decoding library"] supports many RAW formats and is designed for embedding in converters/analyzers. citeturn7search3turn7search7
 **Adopt:** For RAW, start with container-level identification (many are TIFF-derived) and rely on LibRaw for decode attempts, while keeping a “metadata salvage” path even when pixels fail.
 
 ### Damaged video and container repair
@@ -166,25 +168,25 @@ Video repair is typically “container metadata reconstruction + tolerant decode
 **MP4/MOV (ISOBMFF): moov/index reconstruction.**
 
 - Bento4 explicitly models MP4 as a tree of atoms/boxes with structural inspection tools. citeturn5search5turn5search1
-- entity["organization","untrunc","mp4 repair tool"] repairs truncated MP4/MOV by leveraging a similar, not-broken reference file. citeturn0search0turn0search6turn0search14turn5search0  
+- entity["organization","untrunc","mp4 repair tool"] repairs truncated MP4/MOV by leveraging a similar, not-broken reference file. citeturn0search0turn0search6turn0search14turn5search0
 **Adopt:** Provide a “reference-assisted” MP4 repair mode (and automate reference selection from a local corpus when possible).
 
-**AVI: index/header rebuild.** DivFix++ describes rebuilding headers and generating an index table by scanning chunks, then merging the generated index at `idx1` or file end. citeturn6search4turn6search16  
+**AVI: index/header rebuild.** DivFix++ describes rebuilding headers and generating an index table by scanning chunks, then merging the generated index at `idx1` or file end. citeturn6search4turn6search16
 **Adopt:** An AVI repair strategy family should explicitly rebuild `idx1` and normalise RIFF sizes, then validate via tolerant demux/decode.
 
-**Matroska (MKV/WEBM): EBML structure and cues.** Matroska ordering guidance exists to support better playback/seeking. citeturn6search1turn6search5turn6search13  
+**Matroska (MKV/WEBM): EBML structure and cues.** Matroska ordering guidance exists to support better playback/seeking. citeturn6search1turn6search5turn6search13
 **Adopt:** Build a “cluster scan + cues rebuild” strategy, and provide a “remux via tolerant demuxer” path as a fallback.
 
 **MPEG Transport Stream: resynchronisation and packet carving.**
 
 - MPEG-TS uses fixed 188-byte packets with a sync byte; resync often means scanning until sync is found again. citeturn5search11turn5search15turn5search7
-- TSDuck explicitly provides a `tsresync` utility to extract packets and recreate conformant 188-byte TS streams. citeturn5search3  
+- TSDuck explicitly provides a `tsresync` utility to extract packets and recreate conformant 188-byte TS streams. citeturn5search3
 **Adopt:** TS recovery should be a first-class, high-success strategy: resync → extract programs/streams → decode.
 
 **FLV and ASF/WMV.**
 
 - The FLV spec defines tag structure and stream constraints (typically ≤1 audio and ≤1 video stream). citeturn6search2turn6search14
-- Microsoft’s ASF overview describes files as “objects” with required Header and Data objects and an optional Index object. citeturn6search3turn6search7  
+- Microsoft’s ASF overview describes files as “objects” with required Header and Data objects and an optional Index object. citeturn6search3turn6search7
 **Adopt:** Provide container parsers that can salvage split/partial tag/object sequences, plus an extraction path that yields elementary streams or decoded frames when container repair fails.
 
 ### Decoder-assisted salvage via FFmpeg
@@ -192,13 +194,13 @@ Video repair is typically “container metadata reconstruction + tolerant decode
 FFmpeg is not just a transcoder; it exposes explicit knobs for “decode despite errors”:
 
 - `err_detect` flags include `ignore_err` to continue decoding despite errors (useful for analysis rather than perfect playback). citeturn1search1turn1search0
-- `-fflags discardcorrupt` discards corrupted packets at the demuxer/format layer. citeturn8search15  
+- `-fflags discardcorrupt` discards corrupted packets at the demuxer/format layer. citeturn8search15
 **Adopt:** Uncorrupter must institutionalise “decoder configurations as strategies”, not “one FFmpeg call”.
 
 ### Forensic workflows, evidence integrity, and tool testing
 
 - NIST SP 800-86 emphasises forensic handling and evidence integrity as part of incident response and investigation workflows. citeturn9search0turn9search4
-- NIST’s CFTT programme exists because forensic tools require reliable, repeatable testing methodologies. citeturn9search9turn9search1  
+- NIST’s CFTT programme exists because forensic tools require reliable, repeatable testing methodologies. citeturn9search9turn9search1
 **Adopt:** Uncorrupter must treat itself like a forensic tool: deterministic runs, recorded versions/configs, reproducible benchmarks, regression locking.
 
 **4. Decision Matrix of Existing Approaches (explicit “borrow/avoid” list)**
@@ -389,7 +391,7 @@ Use a **tiered adapter system**:
 
 ### Database and storage model: recommendation
 
-**Primary DB:** SQLite for transactional metadata (runs, files, attempts, outputs, job state).  
+**Primary DB:** SQLite for transactional metadata (runs, files, attempts, outputs, job state).
 SQLite is appropriate for offline-first embedded apps, but concurrency parameters and transaction sizing matter; WAL mode improves read/write concurrency but is not ideal for huge transactions. citeturn10search2turn10search11
 
 **Artifact store:** content-addressed blob store on disk (SHA-256 addressed), with compaction and deduplication.
@@ -412,7 +414,7 @@ SQLite is appropriate for offline-first embedded apps, but concurrency parameter
 
 ### Packaging/distribution approach (offline-first desktop)
 
-**Desktop framework recommendation:** Tauri v2 for cross-platform desktop shells around native Rust backends. citeturn10search3turn10search13  
+**Desktop framework recommendation:** Tauri v2 for cross-platform desktop shells around native Rust backends. citeturn10search3turn10search13
 Why: it supports shipping a native backend with a UI written in any web framework, remaining offline-first by design.
 
 **What to avoid even if popular.**
@@ -565,7 +567,7 @@ Each family engine encapsulates:
 
 ### Desktop framework recommendation
 
-Tauri v2 is a good fit for an offline-first shell over a Rust engine. citeturn10search3turn10search13  
+Tauri v2 is a good fit for an offline-first shell over a Rust engine. citeturn10search3turn10search13
 If you later decide to keep a Python-heavy engine, Qt for Python + PyInstaller is viable, but packaging complexity tends to grow with native dependencies. citeturn10search1
 
 ### Workspace model
@@ -755,7 +757,7 @@ TIFF repair is mostly “offset table integrity”:
 
 ### WebP
 
-WebP is RIFF-based; container sizing and chunk structure matter. citeturn3search6turn3search2turn3search18  
+WebP is RIFF-based; container sizing and chunk structure matter. citeturn3search6turn3search2turn3search18
 Strategies: repair RIFF size fields, locate VP8/VP8L/VP8X chunks, attempt subtype-specific decode.
 
 ### HEIC/HEIF and AVIF
@@ -763,7 +765,7 @@ Strategies: repair RIFF size fields, locate VP8/VP8L/VP8X chunks, attempt subtyp
 Treat as ISOBMFF containers:
 
 - libheif supports HEIF/AVIF decoding. citeturn7search0
-- AVIF is explicitly AV1-in-HEIF/ISOBMFF per spec. citeturn7search1turn7search9  
+- AVIF is explicitly AV1-in-HEIF/ISOBMFF per spec. citeturn7search1turn7search9
 Strategies: box scanning, missing box reconstruction, and fallback to frame/image item extraction even when full container parse fails.
 
 ### JPEG 2000
@@ -772,14 +774,14 @@ Use OpenJPEG-based decoding paths; codestream/JP2 parsing should be validator-dr
 
 ### RAW-family support
 
-Use LibRaw for decoding attempts and metadata salvage. citeturn7search3turn7search7  
+Use LibRaw for decoding attempts and metadata salvage. citeturn7search3turn7search7
 Architecturally, RAW support belongs as a plugin family with separate licensing/packaging considerations.
 
 ### Video families (deep focus)
 
 **MP4/MOV**
 - Box tree structure is foundational; tools like Bento4 exist specifically to inspect and manipulate it. citeturn5search5turn5search1
-- Missing `moov` is common in abrupt shutdown scenarios; untrunc addresses this with reference files. citeturn0search0turn0search6  
+- Missing `moov` is common in abrupt shutdown scenarios; untrunc addresses this with reference files. citeturn0search0turn0search6
 Strategies:
 - “Box scan + salvage `mdat` ranges”
 - “Reference-assisted moov rebuild”
@@ -798,7 +800,7 @@ Strategies:
 - Tag-based parsing with constraints; salvage by scanning tags and reconstructing metadata. citeturn6search2turn6search14
 
 **WMV/ASF**
-- Object-based structure: required header+data, optional index. citeturn6search3turn6search7  
+- Object-based structure: required header+data, optional index. citeturn6search3turn6search7
 Strategies: object scan, rebuild minimal header, extract stream packets.
 
 **12. Classification and Triage System (actionable clusters)**
@@ -977,9 +979,9 @@ This section is prioritised for “max recovery rate increase per unit work”.
 
 ### Most important missing strategy families (immediate)
 
-1) **JPEG missing-DHT injection baseline** (because your own run evidence says SOS-but-no-DHT occurs). fileciteturn5file0  
-2) **JPEG header rebuild (robust, not ad hoc)**: generalise the idea behind the winning `jpeg_rebuilt_header_from_segments` strategy into a maintained, tested module. fileciteturn5file0  
-3) **Video-first salvage path**: FFmpeg-based tolerant decode + frame extraction presets must exist early, because it immediately turns many “unplayable” cases into valuable recovered frames. citeturn1search1turn8search15  
+1) **JPEG missing-DHT injection baseline** (because your own run evidence says SOS-but-no-DHT occurs). fileciteturn5file0
+2) **JPEG header rebuild (robust, not ad hoc)**: generalise the idea behind the winning `jpeg_rebuilt_header_from_segments` strategy into a maintained, tested module. fileciteturn5file0
+3) **Video-first salvage path**: FFmpeg-based tolerant decode + frame extraction presets must exist early, because it immediately turns many “unplayable” cases into valuable recovered frames. citeturn1search1turn8search15
 4) **ISOBMFF missing moov playbook**: integrate untrunc as optional aggressive mode and ensure corpus tooling can store reference files. citeturn0search0turn0search6
 
 ### Most important missing tests

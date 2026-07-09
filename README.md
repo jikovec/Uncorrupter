@@ -5,6 +5,10 @@ File Uncorrupter is an offline-first Python CLI for scanning, classifying, and r
 Start with the documentation index:
 
 - [Documentation index](docs/INDEX.md)
+- [Agent orientation](docs/AGENT-INDEX.md)
+- [Source map](docs/SOURCE-MAP.md)
+- [Connection map](docs/CONNECTIONS.md)
+- [Obsidian local vault guide](docs/OBSIDIAN.md)
 - [Developer setup](docs/setup/DEVELOPMENT.md)
 - [Architecture](docs/architecture/ARCHITECTURE.md)
 - [CLI reference](docs/api/CLI.md)
@@ -83,3 +87,9 @@ file-uncorrupter report --db .\runs.sqlite3 --run-id 1 --output-json .\report.js
 - Raw winning candidates are stored under `<output>/_raw_candidates/...` when `--save-raw-candidates` is used.
 - Workspace state defaults to `<output>/.uncorrupter-workspace/` for `recover` and `benchmark`, and to the database directory for `scan` and `classify`, unless `--workspace-root` is provided.
 - The project metadata currently declares version `0.3.0`; see [changelog and release notes](docs/releases/CHANGELOG.md) for the current version-surface note.
+
+## Agent And Obsidian Notes
+
+- The repo root can be opened as a local Obsidian vault for documentation and working context.
+- `.obsidian/` remains ignored and should not be used for cloud, sync, account, or encryption setup.
+- Future agents should start with [AGENTS.md](AGENTS.md), [00_Index.md](00_Index.md), [docs/AGENT-INDEX.md](docs/AGENT-INDEX.md), and [docs/agent-index.json](docs/agent-index.json).

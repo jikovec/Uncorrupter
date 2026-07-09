@@ -2,6 +2,12 @@
 
 The current architecture is a modular Python CLI pipeline. It is designed around evidence first: every run can persist input records, signatures, classifications, candidates, decoder attempts, outputs, and artifact metadata to SQLite.
 
+Related orientation:
+
+- [Source map](../SOURCE-MAP.md)
+- [Connection map](../CONNECTIONS.md)
+- [Agent orientation](../AGENT-INDEX.md)
+
 ## Data Flow
 
 ```text
@@ -140,3 +146,9 @@ The module sets `ImageFile.LOAD_TRUNCATED_IMAGES = True` for Pillow.
 - `configs/`
 
 The current pipeline uses workspace creation and config snapshots. The `store_blob()` helper exists for content-addressed blob storage, but the current recovery path primarily writes recovered outputs and optional raw winning candidates.
+
+## Maintenance Notes
+
+- Update [../SOURCE-MAP.md](../SOURCE-MAP.md) when module boundaries or source responsibilities change.
+- Update [../CONNECTIONS.md](../CONNECTIONS.md) when architecture-to-test or architecture-to-report links change.
+- Treat this file as current architecture documentation; historical architecture notes under [../reports/archive/](../reports/archive/) are evidence, not current truth.

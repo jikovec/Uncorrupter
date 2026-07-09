@@ -2,6 +2,12 @@
 
 File Uncorrupter is offline-first. The current repo does not define network calls, telemetry uploads, an HTTP server, authentication, or authorization.
 
+Related docs:
+
+- [Obsidian local vault guide](../OBSIDIAN.md)
+- [Agent orientation](../AGENT-INDEX.md)
+- [Connection map](../CONNECTIONS.md)
+
 ## Local File Access
 
 The CLI reads files from the selected `input_root` and writes outputs to the selected output directory, database path, and workspace path. Use separate output directories so recovered artifacts, raw candidates, and generated databases do not overwrite original evidence.
@@ -54,3 +60,9 @@ The current repo does not implement:
 - privacy scrubbing of generated reports
 
 If those properties are required, add them as explicit product work rather than assuming the current CLI provides them.
+
+## Obsidian And Documentation Privacy
+
+The repo root can be opened as a local Obsidian vault for documentation. Keep `.obsidian/` ignored because it can contain private workspace state, graph settings, local plugin state, and window layout.
+
+Do not copy secrets, credentials, account identifiers, private URLs, private media paths, or `.env` contents into documentation, reports, handoffs, or `docs/agent-index.json`.

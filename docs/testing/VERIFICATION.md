@@ -48,10 +48,13 @@ Recovery tests in [tests/test_recovery.py](../../tests/test_recovery.py):
 There is no dedicated Markdown formatter or link checker configured in the repo at this time. For documentation-only changes, use:
 
 ```powershell
-python -m pytest
+python -m json.tool .\docs\agent-index.json
+git diff --check
 ```
 
-and a basic local Markdown link check if files were moved.
+Run `python -m pytest` when source, tests, package metadata, or behavior-facing docs change enough to require runtime confidence. Pytest must be installed in the active environment first.
+
+Use a basic local Markdown link check when files are moved or new docs links are added.
 
 ## Manual Smoke Test
 
@@ -70,3 +73,13 @@ Check:
 - `.uncorrupter-workspace/configs/` contains a run config snapshot
 - recovered artifacts are under the chosen output directory
 - `_raw_candidates/` exists only when `--save-raw-candidates` is used
+
+## Agent Index Checks
+
+When updating [../agent-index.json](../agent-index.json), validate it with:
+
+```powershell
+python -m json.tool .\docs\agent-index.json
+```
+
+When updating Obsidian or agent orientation docs, also check [../AGENT-INDEX.md](../AGENT-INDEX.md), [../OBSIDIAN.md](../OBSIDIAN.md), [../SOURCE-MAP.md](../SOURCE-MAP.md), and [../CONNECTIONS.md](../CONNECTIONS.md) for stale links.

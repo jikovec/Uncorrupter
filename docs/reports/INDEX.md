@@ -2,9 +2,15 @@
 
 Reports, research notes, and handoff-style documentation live here. Current developer guides live one level up in [docs/INDEX.md](../INDEX.md).
 
+For root-level workflow reports and implementation evidence, use [../../reports/INDEX.md](../../reports/INDEX.md).
+
 ## Current Reports
 
 - [Documentation reorganization report](DOCUMENTATION-REORGANIZATION-2026-07-07.md) - files changed, files moved, docs extended, validation, and intentional non-changes for the July 7, 2026 documentation cleanup.
+
+Root workflow reports:
+
+- [../../reports/INDEX.md](../../reports/INDEX.md) - validation reports, implementation reports, and future Codex workflow evidence.
 
 ## Archived Reports
 

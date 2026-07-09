@@ -1,0 +1,249 @@
+{
+  "repo_name": "File Uncorrupter",
+  "repo_purpose": "Offline-first Python CLI for scanning, classifying, and recovering damaged visual media with SQLite evidence tracking, JPEG-focused repair strategies, baseline image/video carving, optional FFmpeg-assisted salvage, and JSON/CSV reporting.",
+  "last_reviewed": "2026-07-09",
+  "primary_languages": [
+    "Python"
+  ],
+  "frameworks_and_tools": [
+    "setuptools",
+    "pytest",
+    "Pillow",
+    "SQLite",
+    "optional ffmpeg",
+    "optional ffprobe",
+    "Obsidian local vault"
+  ],
+  "important_paths": {
+    "root_index": "00_Index.md",
+    "agent_rules": "AGENTS.md",
+    "readme": "README.md",
+    "package_config": "pyproject.toml",
+    "source_root": "src/file_uncorrupter/",
+    "tests_root": "tests/",
+    "docs_root": "docs/",
+    "root_reports": "reports/",
+    "handoffs": "handoffs/",
+    "historical_archives": "VERSIONS/",
+    "curated_reports": "docs/reports/",
+    "local_obsidian_settings": ".obsidian/",
+    "local_spec_kit_agents": ".agents/",
+    "local_spec_kit_config": ".specify/"
+  },
+  "docs_entry_points": [
+    "docs/INDEX.md",
+    "docs/AGENT-INDEX.md",
+    "docs/PROJECT-OVERVIEW.md",
+    "docs/SOURCE-MAP.md",
+    "docs/CONNECTIONS.md",
+    "docs/OBSIDIAN.md",
+    "docs/api/CLI.md",
+    "docs/architecture/ARCHITECTURE.md",
+    "docs/setup/DEVELOPMENT.md",
+    "docs/testing/VERIFICATION.md",
+    "docs/security/SECURITY.md",
+    "reports/INDEX.md",
+    "handoffs/INDEX.md"
+  ],
+  "source_areas": [
+    {
+      "path": "src/file_uncorrupter/cli.py",
+      "role": "CLI parser, command arguments, command dispatch, run startup, summary printing"
+    },
+    {
+      "path": "src/file_uncorrupter/pipeline.py",
+      "role": "scan, classify, recover, score, write outputs, and persist recovery evidence"
+    },
+    {
+      "path": "src/file_uncorrupter/intake.py",
+      "role": "input file iteration, byte reads, hashes, declared kind, and file records"
+    },
+    {
+      "path": "src/file_uncorrupter/signature_index.py",
+      "role": "byte-0 and anywhere-in-blob signature detection"
+    },
+    {
+      "path": "src/file_uncorrupter/classification.py",
+      "role": "family, label, confidence, and classification evidence"
+    },
+    {
+      "path": "src/file_uncorrupter/engines/",
+      "role": "candidate generation engines including jpeg-v1 and baseline-v2"
+    },
+    {
+      "path": "src/file_uncorrupter/decoders.py",
+      "role": "Pillow and FFmpeg/ffprobe probing, saving, remuxing, previews, frames, and output hashes"
+    },
+    {
+      "path": "src/file_uncorrupter/scoring.py",
+      "role": "successful candidate scoring"
+    },
+    {
+      "path": "src/file_uncorrupter/db.py",
+      "role": "SQLite schema, migrations, persistence, summaries, and attempts rows"
+    },
+    {
+      "path": "src/file_uncorrupter/reporting.py",
+      "role": "JSON summary and attempts CSV export"
+    },
+    {
+      "path": "src/file_uncorrupter/workspace.py",
+      "role": "local workspace layout and config snapshots"
+    },
+    {
+      "path": "src/file_uncorrupter/legacy/",
+      "role": "historical source evidence, not current behavior authority"
+    }
+  ],
+  "test_areas": [
+    {
+      "path": "tests/test_classification.py",
+      "coverage": "JPEG classification labels for missing EOI and missing SOI with internal structure"
+    },
+    {
+      "path": "tests/test_signature_index.py",
+      "coverage": "anywhere signature detection for prefixed MP4 data"
+    },
+    {
+      "path": "tests/test_db.py",
+      "coverage": "run summary counts, duplicate candidate persistence, and successful image output summaries"
+    },
+    {
+      "path": "tests/test_recovery.py",
+      "coverage": "JPEG recovery strategies, candidate generation, standard color tables, and FFmpeg-gated prefixed MP4 recovery"
+    }
+  ],
+  "commands": {
+    "install": [
+      "python -m pip install -e ."
+    ],
+    "test": [
+      "python -m pytest"
+    ],
+    "docs_validation": [
+      "python -m json.tool .\\docs\\agent-index.json",
+      "git diff --check"
+    ],
+    "cli": [
+      "file-uncorrupter scan .\\input --recursive --all-files --db .\\runs.sqlite3",
+      "file-uncorrupter classify .\\input --recursive --all-files --db .\\runs.sqlite3",
+      "file-uncorrupter recover .\\input .\\output --recursive --all-files --db .\\runs.sqlite3 --save-raw-candidates",
+      "file-uncorrupter benchmark .\\input .\\output --recursive --all-files --db .\\runs.sqlite3 --output-json .\\benchmark.json --output-csv .\\attempts.csv",
+      "file-uncorrupter report --db .\\runs.sqlite3 --run-id 1 --output-json .\\report.json --output-csv .\\attempts.csv"
+    ]
+  },
+  "report_locations": {
+    "root_workflow_reports": "reports/",
+    "curated_documentation_reports": "docs/reports/",
+    "historical_research_archive": "docs/reports/archive/"
+  },
+  "handoff_locations": {
+    "root_handoffs": "handoffs/"
+  },
+  "decision_locations": {
+    "current_decision_log": "docs/decisions.md",
+    "future_adr_location": "docs/adr/ if explicitly created later"
+  },
+  "safety_rules": [
+    "Preserve existing runtime behavior unless explicitly asked to change it.",
+    "Do not edit source, tests, package metadata, release archives, deployment config, cloud/account settings, encryption setup, or secrets during docs-only work.",
+    "Do not commit, push, deploy, publish, tag, release, reset, stash, or discard changes unless explicitly asked.",
+    "Treat source, package config, and tests as higher-priority truth than docs and historical reports.",
+    "Do not invent project history, architecture, security guarantees, workflows, deployment support, roadmap items, or decisions.",
+    "Record exact blockers when validation cannot be run."
+  ],
+  "sensitive_path_rules": [
+    "Do not include secrets, credentials, private keys, tokens, private certificates, account IDs, private URLs, private media paths, or .env contents in docs.",
+    "Keep machine-specific absolute paths out of repo docs and JSON indexes.",
+    "Keep .obsidian/ ignored.",
+    "Keep .agents/ and .specify/ local-only unless a future explicit decision changes that.",
+    "Do not treat generated recovery outputs, SQLite databases, JSON reports, CSV reports, or raw candidates as anonymized public artifacts."
+  ],
+  "obsidian_conventions": {
+    "mode": "local-first plaintext documentation vault",
+    "canonical_links": "normal Markdown links",
+    "wiki_links": "allowed sparingly in hub notes for Obsidian graph navigation",
+    "ignored_settings": ".obsidian/",
+    "graph_hubs": [
+      "00_Index.md",
+      "docs/INDEX.md",
+      "docs/AGENT-INDEX.md",
+      "docs/SOURCE-MAP.md",
+      "docs/CONNECTIONS.md",
+      "reports/INDEX.md",
+      "handoffs/INDEX.md"
+    ]
+  },
+  "tag_taxonomy": {
+    "global": [
+      "#repo/index",
+      "#repo/architecture",
+      "#repo/development",
+      "#repo/testing",
+      "#repo/security",
+      "#repo/roadmap",
+      "#repo/decision",
+      "#repo/source-map",
+      "#repo/connection-map",
+      "#agent/orientation",
+      "#agent/handoff",
+      "#agent/report",
+      "#obsidian/local",
+      "#obsidian/graph"
+    ],
+    "repo_specific": [
+      "#uncorrupter/cli",
+      "#uncorrupter/recovery",
+      "#uncorrupter/jpeg",
+      "#uncorrupter/video",
+      "#uncorrupter/ffmpeg",
+      "#uncorrupter/sqlite",
+      "#uncorrupter/evidence",
+      "#uncorrupter/signature-detection",
+      "#uncorrupter/testing",
+      "#uncorrupter/history",
+      "#uncorrupter/release-artifacts"
+    ],
+    "avoid_until_supported": [
+      "#repo/cloud",
+      "#repo/auth",
+      "#repo/encryption",
+      "#repo/telemetry",
+      "#repo/production-deploy"
+    ]
+  },
+  "known_risks": [
+    "The worktree may contain unrelated dirty release archive changes under VERSIONS/.",
+    "pyproject.toml declares version 0.3.0 while src/file_uncorrupter/__init__.py exposes __version__ = \"0.2.0\".",
+    "pytest is configured but not declared as a package dependency.",
+    "FFmpeg/ffprobe-dependent behavior and tests depend on local tool availability.",
+    "Historical reports and release artifacts are evidence, not current implementation truth.",
+    "No deployment workflow is documented in this repo."
+  ],
+  "omitted_artifacts": [
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "reason": "Existing docs/architecture/ARCHITECTURE.md is the canonical architecture doc."
+    },
+    {
+      "path": "docs/DEVELOPMENT.md",
+      "reason": "Existing docs/setup/DEVELOPMENT.md is the canonical development doc."
+    },
+    {
+      "path": "docs/TESTING.md",
+      "reason": "Existing docs/testing/VERIFICATION.md and docs/testing.md cover testing guidance."
+    },
+    {
+      "path": "docs/SECURITY.md",
+      "reason": "Existing docs/security/SECURITY.md is the canonical security doc."
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "reason": "Existing docs/decisions.md is the current decision log."
+    },
+    {
+      "path": ".agents/index.json",
+      "reason": ".agents/ is local-only ignored Spec Kit scaffolding in this repo."
+    }
+  ]
+}

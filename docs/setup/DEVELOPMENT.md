@@ -81,3 +81,21 @@ Common generated files are ignored by [.gitignore](../../.gitignore):
 - `*.egg-info/`
 
 Recovery runs also create output folders, `_raw_candidates/` when requested, and `.uncorrupter-workspace/` under the selected output or database directory.
+
+## Documentation And Agent Indexes
+
+For docs-only orientation work, useful validation commands are:
+
+```powershell
+python -m json.tool .\docs\agent-index.json
+git diff --check
+```
+
+The repo root can be opened as a local Obsidian vault for documentation. Keep `.obsidian/` ignored and do not add cloud, account, sync, or encryption setup during development.
+
+Agent-facing navigation lives in:
+
+- [../AGENT-INDEX.md](../AGENT-INDEX.md)
+- [../SOURCE-MAP.md](../SOURCE-MAP.md)
+- [../CONNECTIONS.md](../CONNECTIONS.md)
+- [../agent-index.json](../agent-index.json)

@@ -1,0 +1,8 @@
+*.py text diff=python
+*.md text diff=markdown
+*.json text
+*.toml text
+*.yml text
+*.yaml text
+*.cff text
+*.zip binary

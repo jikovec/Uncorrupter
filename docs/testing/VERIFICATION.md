@@ -5,81 +5,67 @@ The current repository uses pytest. Test configuration lives in [pyproject.toml]
 - `pythonpath = ["src"]`
 - `testpaths = ["tests"]`
 
+Pytest itself is not currently declared as a project dependency.
+
 ## Run The Test Suite
 
-From the repository root:
+From the repository root, when `pytest` is installed:
 
-```powershell
+```text
 python -m pytest
 ```
 
-FFmpeg-dependent video tests are skipped automatically when FFmpeg is not available.
+FFmpeg-dependent video tests skip when the required FFmpeg tooling is unavailable.
 
-## Current Test Coverage
+## Current Test Files
 
-Classification tests in [tests/test_classification.py](../../tests/test_classification.py):
+- [test_classification.py](../../tests/test_classification.py) - JPEG classification behavior.
+- [test_signature_index.py](../../tests/test_signature_index.py) - anywhere signature detection for prefixed MP4 data.
+- [test_db.py](../../tests/test_db.py) - run summaries, candidate persistence, and output summaries.
+- [test_recovery.py](../../tests/test_recovery.py) - JPEG recovery strategies, candidate generation, color tables, and FFmpeg-gated prefixed MP4 recovery.
 
-- missing EOI JPEG classification
-- missing SOI with internal JPEG structure classification
+Historical legacy source is not part of the pytest suite.
 
-Signature tests in [tests/test_signature_index.py](../../tests/test_signature_index.py):
+## Documentation And Structured-File Checks
 
-- anywhere signature detection for prefixed MP4 data
+For documentation/index changes:
 
-Database tests in [tests/test_db.py](../../tests/test_db.py):
-
-- run summary counts
-- duplicate candidate persistence
-- successful image output summary counts
-
-Recovery tests in [tests/test_recovery.py](../../tests/test_recovery.py):
-
-- missing EOI JPEG recovery
-- missing SOI JPEG recovery
-- missing DHT JPEG recovery
-- scattered-segment JPEG header rebuild
-- synthetic SOS rebuilds
-- prefixed MP4 recovery through signature offset when FFmpeg is available
-- candidate generation assertions for missing SOI and missing SOS cases
-- standard color table generation
-
-## Basic Documentation Checks
-
-There is no dedicated Markdown formatter or link checker configured in the repo at this time. For documentation-only changes, use:
-
-```powershell
-python -m json.tool .\docs\agent-index.json
+```text
+python -m json.tool docs/agent-index.json
 git diff --check
 ```
 
-Run `python -m pytest` when source, tests, package metadata, or behavior-facing docs change enough to require runtime confidence. Pytest must be installed in the active environment first.
-
-Use a basic local Markdown link check when files are moved or new docs links are added.
+No dedicated Markdown formatter or link-checker is configured. Check changed relative links against the tracked repository tree.
 
 ## Manual Smoke Test
 
-For a small local sample corpus:
+For a small non-sensitive local sample corpus:
 
-```powershell
-file-uncorrupter scan .\input --recursive --all-files --db .\runs.sqlite3
-file-uncorrupter recover .\input .\output --recursive --all-files --db .\runs.sqlite3 --save-raw-candidates
-file-uncorrupter report --db .\runs.sqlite3 --output-json .\report.json --output-csv .\attempts.csv
+```text
+file-uncorrupter scan input --recursive --all-files --db runs.sqlite3
+file-uncorrupter recover input output --recursive --all-files --db runs.sqlite3 --save-raw-candidates
+file-uncorrupter report --db runs.sqlite3 --output-json report.json --output-csv attempts.csv
 ```
 
-Check:
+Verify:
 
-- JSON summaries are printed
-- `runs.sqlite3` is created
-- `.uncorrupter-workspace/configs/` contains a run config snapshot
-- recovered artifacts are under the chosen output directory
-- `_raw_candidates/` exists only when `--save-raw-candidates` is used
+- JSON summaries are printed.
+- `runs.sqlite3` is created.
+- `.uncorrupter-workspace/configs/` contains a run config snapshot.
+- recovered artifacts are written under the chosen output directory.
+- `_raw_candidates/` exists only when `--save-raw-candidates` is used.
 
-## Agent Index Checks
+Keep source evidence separate from every generated path.
 
-When updating [../agent-index.json](../agent-index.json), validate it with:
+## Result Vocabulary
 
-```powershell
-python -m json.tool .\docs\agent-index.json
-```
+Report checks as one of:
 
-When updating Obsidian or agent orientation docs, also check [../AGENT-INDEX.md](../AGENT-INDEX.md), [../OBSIDIAN.md](../OBSIDIAN.md), [../SOURCE-MAP.md](../SOURCE-MAP.md), and [../CONNECTIONS.md](../CONNECTIONS.md) for stale links.
+- `passed`
+- `failed`
+- `blocked`
+- `unavailable`
+- `not applicable`
+- `not run`
+
+Do not report an unavailable or unrun check as passing.

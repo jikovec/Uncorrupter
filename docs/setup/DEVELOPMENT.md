@@ -4,98 +4,99 @@
 
 - Python 3.11 or newer.
 - `pip`.
-- Optional: `ffmpeg` and `ffprobe` available on `PATH` for video recovery and FFmpeg fallback paths.
+- Optional: `ffmpeg` and `ffprobe` on `PATH` for FFmpeg-assisted image/video paths.
 
-The package dependency declared in [pyproject.toml](../../pyproject.toml) is `Pillow>=10.0.0`.
+The package declares `Pillow>=10.0.0` as its runtime dependency. The repository does not currently declare an operating-system support matrix.
 
 ## Install
 
 From the repository root:
 
-```powershell
+```text
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
 python -m pip install -U pip
 python -m pip install -e .
 ```
 
-If you do not want a virtual environment, the editable install still works in any Python 3.11+ environment:
+Activate the virtual environment using the normal command for your shell, for example:
 
-```powershell
+```text
+# POSIX shells
+. .venv/bin/activate
+
+# PowerShell
+.\.venv\Scripts\Activate.ps1
+```
+
+An editable install without a virtual environment is also possible in an appropriate Python 3.11+ environment:
+
+```text
 python -m pip install -e .
 ```
 
 ## Optional FFmpeg
 
-The code discovers FFmpeg with `shutil.which("ffmpeg")` and `shutil.which("ffprobe")` in [src/file_uncorrupter/decoders.py](../../src/file_uncorrupter/decoders.py).
+The current decoder module discovers `ffmpeg` and `ffprobe` with `shutil.which()`.
 
-When both tools are available:
+When available, FFmpeg/ffprobe can be used for image fallback, video/container probing, remuxing, preview extraction, and frame extraction. FFmpeg-dependent tests skip when the required executables are unavailable.
 
-- image recovery can use FFmpeg as a fallback after Pillow probing fails
-- video/container probing uses ffprobe metadata plus an FFmpeg preview frame
-- video recovery can produce remuxed video, preview frames, or a small frame set
+Treat untrusted media parsing as a security boundary; see [../security/SECURITY.md](../security/SECURITY.md).
 
-When either tool is missing:
+## Common Development Commands
 
-- FFmpeg-specific paths return a clear `ffmpeg_not_found` or `ffmpeg_or_ffprobe_not_found` style error
-- FFmpeg-dependent tests are skipped by pytest
+Run the test suite when `pytest` is installed:
 
-## Local Commands
-
-Run all tests:
-
-```powershell
+```text
 python -m pytest
 ```
 
-Run a quick scan:
+Run a scan:
 
-```powershell
-file-uncorrupter scan .\input --recursive --all-files --db .\runs.sqlite3
+```text
+file-uncorrupter scan input --recursive --all-files --db runs.sqlite3
 ```
 
 Run recovery:
 
-```powershell
-file-uncorrupter recover .\input .\output --recursive --all-files --db .\runs.sqlite3 --save-raw-candidates
+```text
+file-uncorrupter recover input output --recursive --all-files --db runs.sqlite3 --save-raw-candidates
 ```
 
 Export an existing report:
 
-```powershell
-file-uncorrupter report --db .\runs.sqlite3 --output-json .\report.json --output-csv .\attempts.csv
+```text
+file-uncorrupter report --db runs.sqlite3 --output-json report.json --output-csv attempts.csv
 ```
 
-## Generated Files
+See [../api/CLI.md](../api/CLI.md) for the full current CLI surface.
 
-Common generated files are ignored by [.gitignore](../../.gitignore):
+## Generated And Local-Only Files
 
-- `__pycache__/`
-- `.pytest_cache/`
-- `.venv/`
-- `*.pyc`
-- `*.sqlite3`
-- `*.db`
-- `build/`
-- `dist/`
-- `*.egg-info/`
+[.gitignore](../../.gitignore) excludes common Python/build/cache output, local SQLite databases, `.uncorrupter-workspace/`, `_raw_candidates/`, and local Obsidian settings.
 
-Recovery runs also create output folders, `_raw_candidates/` when requested, and `.uncorrupter-workspace/` under the selected output or database directory.
+Historical ZIP archives under `VERSIONS/` are intentionally tracked evidence and are not covered by a global archive ignore rule.
 
-## Documentation And Agent Indexes
+## Git And Work Management
 
-For docs-only orientation work, useful validation commands are:
+Before editing:
 
-```powershell
-python -m json.tool .\docs\agent-index.json
+```text
+git status --short --branch
+```
+
+Preserve unrelated dirty/untracked work. For material work, use the current GitHub issue ledger and the normal flow:
+
+`Issue -> branch -> implementation -> verification -> pull request`
+
+Do not merge, release, publish, deploy, tag, or change repository settings unless the current task explicitly authorizes it.
+
+## Documentation Validation
+
+When documentation or agent indexes change:
+
+```text
+python -m json.tool docs/agent-index.json
 git diff --check
 ```
 
-The repo root can be opened as a local Obsidian vault for documentation. Keep `.obsidian/` ignored and do not add cloud, account, sync, or encryption setup during development.
-
-Agent-facing navigation lives in:
-
-- [../AGENT-INDEX.md](../AGENT-INDEX.md)
-- [../SOURCE-MAP.md](../SOURCE-MAP.md)
-- [../CONNECTIONS.md](../CONNECTIONS.md)
-- [../agent-index.json](../agent-index.json)
+There is no dedicated Markdown formatter/link-checker configured in the repository. Validate changed relative links against the tracked tree and record any unavailable checks rather than claiming they passed.

@@ -1,62 +1,63 @@
 # Documentation Index
 
-This index is the entry point for current documentation. The repository code, tests, and package metadata are the source of truth when a historical report disagrees with the current implementation.
+This is the entry point for current repository documentation. Current source, tests, package configuration, and live repository state outrank historical reports and release archives when they disagree.
 
 ## Start Here
 
-- [Project overview](PROJECT-OVERVIEW.md) - what the package does now and where the important files live.
-- [Agent orientation](AGENT-INDEX.md) - start-here workflow, safety rules, update obligations, and machine-readable index route.
-- [Source map](SOURCE-MAP.md) - current source and test areas by subsystem.
-- [Connection map](CONNECTIONS.md) - docs, source, tests, reports, and handoff connections.
-- [Obsidian local vault guide](OBSIDIAN.md) - local-first vault conventions, graph hubs, and tag taxonomy.
-- [Developer setup](setup/DEVELOPMENT.md) - install, optional FFmpeg setup, and local development commands.
-- [Architecture](architecture/ARCHITECTURE.md) - current module boundaries and data flow.
-- [CLI reference](api/CLI.md) - commands, options, outputs, and the note that there is no HTTP route layer.
+- [Project overview](PROJECT-OVERVIEW.md)
+- [Agent orientation](AGENT-INDEX.md)
+- [Source map](SOURCE-MAP.md)
+- [Connection map](CONNECTIONS.md)
+- [Current state](current-state.md)
+- [Decision log](decisions.md)
+- [Obsidian local vault guide](OBSIDIAN.md)
 
-## Operational Docs
+## Development And Operation
 
-- [Security and local data handling](security/SECURITY.md)
+- [Developer setup](setup/DEVELOPMENT.md)
+- [Architecture](architecture/ARCHITECTURE.md)
+- [CLI reference](api/CLI.md)
 - [Testing and verification](testing/VERIFICATION.md)
+- [Security and local data handling](security/SECURITY.md)
 - [Changelog and release notes](releases/CHANGELOG.md)
-- [Machine-readable agent index](agent-index.json)
+- [Discovered commands](commands.md)
 
-## Reports And Archive
+## Repository Policies
+
+- [Contributing](../CONTRIBUTING.md)
+- [Security reporting](../SECURITY.md)
+- [Support](../SUPPORT.md)
+- [Apache License 2.0](../LICENSE)
+- [Agent rules](../AGENTS.md)
+
+## Machine-Readable Orientation
+
+- [agent-index.json](agent-index.json)
+
+## Reports, Handoffs, And History
 
 - [Root reports index](../reports/INDEX.md)
 - [Root handoffs index](../handoffs/INDEX.md)
-- [Reports index](reports/INDEX.md)
+- [Curated documentation reports](reports/INDEX.md)
 - [Historical research blueprint](reports/archive/001-deep-research-report.md)
-- [Documentation reorganization report](reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md)
+- [Historical release artifacts](../VERSIONS/)
 
-## Current Documentation Inventory
+The following are historical provenance, not current tracked root directories:
 
-Current, developer-facing docs:
+- root `CHANGELOG/`
+- root `DOCUMENTATION/`
+- root `results/`
 
-- [README.md](../README.md)
-- [docs/INDEX.md](INDEX.md)
-- [docs/AGENT-INDEX.md](AGENT-INDEX.md)
-- [docs/OBSIDIAN.md](OBSIDIAN.md)
-- [docs/SOURCE-MAP.md](SOURCE-MAP.md)
-- [docs/CONNECTIONS.md](CONNECTIONS.md)
-- [docs/agent-index.json](agent-index.json)
-- [docs/PROJECT-OVERVIEW.md](PROJECT-OVERVIEW.md)
-- [docs/setup/DEVELOPMENT.md](setup/DEVELOPMENT.md)
-- [docs/architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md)
-- [docs/api/CLI.md](api/CLI.md)
-- [docs/security/SECURITY.md](security/SECURITY.md)
-- [docs/testing/VERIFICATION.md](testing/VERIFICATION.md)
-- [docs/releases/CHANGELOG.md](releases/CHANGELOG.md)
-- [docs/reports/INDEX.md](reports/INDEX.md)
-- [reports/INDEX.md](../reports/INDEX.md)
-- [handoffs/INDEX.md](../handoffs/INDEX.md)
+The former `DOCUMENTATION/` research report is preserved under `docs/reports/archive/`.
 
-Historical or evidence docs:
+## Canonical Documentation Rule
 
-- [docs/reports/archive/001-deep-research-report.md](reports/archive/001-deep-research-report.md)
-- [VERSIONS/](../VERSIONS/) contains historical archives and legacy release artifacts.
+Do not create parallel root or `docs/` copies when a canonical document already exists. In particular:
 
-Empty or non-canonical documentation locations found during inventory:
+- architecture: `docs/architecture/ARCHITECTURE.md`
+- development: `docs/setup/DEVELOPMENT.md`
+- testing: `docs/testing/VERIFICATION.md`
+- security model: `docs/security/SECURITY.md`
+- decisions: `docs/decisions.md`
 
-- `CHANGELOG/` existed as a top-level directory but contained no tracked files during this cleanup.
-- `results/` existed as a top-level directory but contained no tracked files during this cleanup.
-- `DOCUMENTATION/` previously contained the deep research report; that report now lives in the report archive.
+Conventional root files such as `SECURITY.md`, `CONTRIBUTING.md`, and `SUPPORT.md` may exist for GitHub discovery and repository policy; they should route to deeper canonical docs instead of duplicating them.

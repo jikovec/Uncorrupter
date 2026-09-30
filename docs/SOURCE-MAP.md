@@ -2,13 +2,13 @@
 
 Tags: #repo/source-map #repo/architecture #uncorrupter/recovery
 
-This map connects the current source tree to the product behavior, tests, and docs that describe it. Source, package config, and tests remain the highest-priority truth when this map drifts.
+Current source, tests, and package configuration are authoritative for implementation behavior. Historical archives are evidence only.
 
 ## Public Interface
 
-- [src/file_uncorrupter/cli.py](../src/file_uncorrupter/cli.py) defines the `file-uncorrupter` CLI parser and dispatch.
-- [pyproject.toml](../pyproject.toml) declares the package name, package version, Python requirement, runtime dependency on Pillow, pytest configuration, and console script.
-- [docs/api/CLI.md](api/CLI.md) documents the CLI surface.
+- [src/file_uncorrupter/cli.py](../src/file_uncorrupter/cli.py) - CLI parser and command dispatch.
+- [pyproject.toml](../pyproject.toml) - package name/version, Python requirement, runtime dependency, pytest configuration, and console entry point.
+- [docs/api/CLI.md](api/CLI.md) - current CLI reference.
 
 Commands:
 
@@ -20,114 +20,77 @@ Commands:
 
 ## Recovery Pipeline
 
-- [src/file_uncorrupter/pipeline.py](../src/file_uncorrupter/pipeline.py) orchestrates scan, classification, candidate generation, decoder probing, scoring, output writing, and persistence.
-- [src/file_uncorrupter/types.py](../src/file_uncorrupter/types.py) defines shared dataclasses for signatures, file records, classifications, candidates, artifacts, decode results, and recovery outcomes.
-- [docs/architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md) explains the high-level data flow.
+- [pipeline.py](../src/file_uncorrupter/pipeline.py) - scan, classify, recover, score, write outputs, persist evidence.
+- [types.py](../src/file_uncorrupter/types.py) - shared data structures.
+- [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md) - high-level data/control flow.
 
-Primary test coverage:
-
-- [tests/test_recovery.py](../tests/test_recovery.py)
-- [tests/test_classification.py](../tests/test_classification.py)
-- [tests/test_db.py](../tests/test_db.py)
+Primary tests: [test_recovery.py](../tests/test_recovery.py), [test_classification.py](../tests/test_classification.py), [test_db.py](../tests/test_db.py).
 
 ## Intake And Signature Detection
 
-- [src/file_uncorrupter/intake.py](../src/file_uncorrupter/intake.py) iterates input files, reads bytes, hashes data, determines declared kind from extension, and builds file records.
-- [src/file_uncorrupter/signature_index.py](../src/file_uncorrupter/signature_index.py) detects byte-0 and anywhere-in-blob signatures.
-- [src/file_uncorrupter/constants.py](../src/file_uncorrupter/constants.py) defines file signatures, supported image/video kinds, extension mapping, Pillow output formats, video output extensions, and ISOBMFF brand mapping.
+- [intake.py](../src/file_uncorrupter/intake.py) - file iteration, byte reads, hashes, extension-derived kind, file records.
+- [signature_index.py](../src/file_uncorrupter/signature_index.py) - byte-0 and anywhere-in-blob signature detection.
+- [constants.py](../src/file_uncorrupter/constants.py) - signatures, supported kinds, extension mapping, output mappings.
 
-Primary test coverage:
-
-- [tests/test_signature_index.py](../tests/test_signature_index.py)
-- [tests/test_classification.py](../tests/test_classification.py)
+Primary tests: [test_signature_index.py](../tests/test_signature_index.py), [test_classification.py](../tests/test_classification.py).
 
 ## Classification
 
-- [src/file_uncorrupter/classification.py](../src/file_uncorrupter/classification.py) assigns family, label, confidence, and evidence.
-- JPEG has the deepest classification labels, including missing SOI, missing EOI, missing DHT, structural salvage candidates, weak internal signal, and low signal.
-- Other supported families receive baseline container or detected-candidate labels.
+- [classification.py](../src/file_uncorrupter/classification.py) - family, label, confidence, and evidence assignment.
 
-Primary test coverage:
+JPEG has the deepest classification/recovery strategy coverage. Other supported families currently use baseline detection and candidate behavior.
 
-- [tests/test_classification.py](../tests/test_classification.py)
-- [tests/test_recovery.py](../tests/test_recovery.py)
+Primary tests: [test_classification.py](../tests/test_classification.py), [test_recovery.py](../tests/test_recovery.py).
 
 ## Engines
 
-- [src/file_uncorrupter/engines/base.py](../src/file_uncorrupter/engines/base.py) defines the recovery engine interface.
-- [src/file_uncorrupter/engines/registry.py](../src/file_uncorrupter/engines/registry.py) registers available engines.
-- [src/file_uncorrupter/engines/jpeg_v1.py](../src/file_uncorrupter/engines/jpeg_v1.py) implements JPEG-focused candidate generation.
-- [src/file_uncorrupter/engines/media_v2.py](../src/file_uncorrupter/engines/media_v2.py) implements baseline image/video candidate generation and delegates JPEG to `jpeg-v1`.
+- [engines/base.py](../src/file_uncorrupter/engines/base.py) - recovery engine interface.
+- [engines/registry.py](../src/file_uncorrupter/engines/registry.py) - engine registry.
+- [engines/jpeg_v1.py](../src/file_uncorrupter/engines/jpeg_v1.py) - JPEG candidate generation.
+- [engines/media_v2.py](../src/file_uncorrupter/engines/media_v2.py) - baseline image/video candidate generation and JPEG delegation.
 
-Registered engines:
-
-- `jpeg-v1`
-- `baseline-v2`
-
-Primary test coverage:
-
-- [tests/test_recovery.py](../tests/test_recovery.py)
+Registered engines: `jpeg-v1`, `baseline-v2`.
 
 ## Decoder Adapters
 
-- [src/file_uncorrupter/decoders.py](../src/file_uncorrupter/decoders.py) adapts Pillow, FFmpeg, and ffprobe for candidate probing and output writing.
-- Pillow is used for supported still-image probing and saving.
-- FFmpeg/ffprobe are optional and discovered from `PATH`.
-- Video/container recovery can produce remuxed output, preview frames, and frame-set artifacts when local FFmpeg tooling can decode the candidate.
+- [decoders.py](../src/file_uncorrupter/decoders.py) - Pillow and optional FFmpeg/ffprobe probing/output adapters.
 
-Related docs:
-
-- [Security and local data handling](security/SECURITY.md)
-- [Testing and verification](testing/VERIFICATION.md)
+Related docs: [security/SECURITY.md](security/SECURITY.md), [testing/VERIFICATION.md](testing/VERIFICATION.md).
 
 ## Scoring
 
-- [src/file_uncorrupter/scoring.py](../src/file_uncorrupter/scoring.py) scores successful decoder results.
-- Score inputs include candidate priority, decoded dimensions, decoder entropy or video metadata, family match, candidate kind, and classification-specific boosts.
-
-Primary test coverage:
-
-- [tests/test_recovery.py](../tests/test_recovery.py)
+- [scoring.py](../src/file_uncorrupter/scoring.py) - successful candidate scoring.
 
 ## Persistence And Reporting
 
-- [src/file_uncorrupter/db.py](../src/file_uncorrupter/db.py) creates and migrates SQLite schema, starts runs, persists records, and fetches summaries.
-- [src/file_uncorrupter/reporting.py](../src/file_uncorrupter/reporting.py) writes JSON summary reports and attempts CSV files.
+- [db.py](../src/file_uncorrupter/db.py) - SQLite schema, migrations, run/file/candidate/attempt/output persistence, summaries.
+- [reporting.py](../src/file_uncorrupter/reporting.py) - JSON summary and attempts CSV output.
 
-Main database tables:
+Schema includes `runs`, `files`, `signatures`, `candidates`, `attempts`, `outputs`, and `frames`.
 
-- `runs`
-- `files`
-- `signatures`
-- `candidates`
-- `attempts`
-- `outputs`
-- `frames`
-
-Primary test coverage:
-
-- [tests/test_db.py](../tests/test_db.py)
+Primary tests: [test_db.py](../tests/test_db.py).
 
 ## Workspace
 
-- [src/file_uncorrupter/workspace.py](../src/file_uncorrupter/workspace.py) defines local workspace roots and config snapshots.
-- Recovery and benchmark runs default workspace state under the output root. Scan and classify default workspace state near the database path unless `--workspace-root` is provided.
+- [workspace.py](../src/file_uncorrupter/workspace.py) - local workspace directories and run-config snapshots.
 
-Related docs:
+Recovery/benchmark default workspace state under the output root. Scan/classify default it near the database path unless `--workspace-root` is supplied.
 
-- [Developer setup](setup/DEVELOPMENT.md)
-- [CLI reference](api/CLI.md)
+## Test Suite
 
-## Historical And Legacy Material
+Current pytest files:
 
-- [src/file_uncorrupter/legacy/a_2026_04_01.py](../src/file_uncorrupter/legacy/a_2026_04_01.py) preserves legacy implementation material.
-- [tests/a.py](../tests/a.py) is a retained legacy script file.
-- [docs/reports/archive/001-deep-research-report.md](reports/archive/001-deep-research-report.md) is historical research evidence.
-- [VERSIONS/](../VERSIONS/) contains historical release artifacts and must not be treated as current implementation truth.
+- [tests/test_classification.py](../tests/test_classification.py)
+- [tests/test_signature_index.py](../tests/test_signature_index.py)
+- [tests/test_db.py](../tests/test_db.py)
+- [tests/test_recovery.py](../tests/test_recovery.py)
 
-## Test Map
+Legacy source is not part of the pytest suite.
 
-- [tests/test_classification.py](../tests/test_classification.py) covers JPEG classification labels.
-- [tests/test_signature_index.py](../tests/test_signature_index.py) covers anywhere signature detection for prefixed MP4 data.
-- [tests/test_db.py](../tests/test_db.py) covers run summary counts, duplicate candidate persistence, and successful output summaries.
-- [tests/test_recovery.py](../tests/test_recovery.py) covers JPEG recovery strategies, candidate generation, standard color tables, and FFmpeg-gated prefixed MP4 recovery.
+## Historical And Legacy Evidence
+
+- [src/file_uncorrupter/legacy/a_2026_04_01.py](../src/file_uncorrupter/legacy/a_2026_04_01.py) - preserved legacy source evidence.
+- [VERSIONS/](../VERSIONS/) - historical release artifacts.
+- [docs/reports/archive/](reports/archive/) - historical research.
+
+The former `tests/a.py` duplicate of the legacy script was removed during the 2026-09-30 hygiene baseline because the same historical source is already preserved under `src/file_uncorrupter/legacy/` and `VERSIONS/`; it was not collected by the configured pytest test pattern.

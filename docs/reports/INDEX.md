@@ -1,29 +1,23 @@
 # Reports Index
 
-Reports, research notes, and handoff-style documentation live here. Current developer guides live one level up in [docs/INDEX.md](../INDEX.md).
+Reports, research notes, and documentation-history evidence live here. Current developer guides live one level up in [docs/INDEX.md](../INDEX.md).
 
-For root-level workflow reports and implementation evidence, use [../../reports/INDEX.md](../../reports/INDEX.md).
+For root-level workflow reports and implementation/validation evidence, use [../../reports/INDEX.md](../../reports/INDEX.md).
 
 ## Current Reports
 
-- [Documentation reorganization report](DOCUMENTATION-REORGANIZATION-2026-07-07.md) - files changed, files moved, docs extended, validation, and intentional non-changes for the July 7, 2026 documentation cleanup.
-
-Root workflow reports:
-
-- [../../reports/INDEX.md](../../reports/INDEX.md) - validation reports, implementation reports, and future Codex workflow evidence.
+- [Documentation reorganization report](DOCUMENTATION-REORGANIZATION-2026-07-07.md) - July 2026 documentation cleanup evidence.
 
 ## Archived Reports
 
-- [001 deep research report](archive/001-deep-research-report.md) - historical master research and architecture blueprint moved from `DOCUMENTATION/001 deep-research-report.md`.
+- [001 deep research report](archive/001-deep-research-report.md) - historical research and architecture blueprint formerly stored under the old `DOCUMENTATION/` location.
 
 ## External Evidence Locations
 
-- [../../VERSIONS/](../../VERSIONS/) - historical archives and legacy release artifacts.
-- [../../src/file_uncorrupter/legacy/](../../src/file_uncorrupter/legacy/) - legacy source retained in the package tree.
-- [../../tests/](../../tests/) - regression tests and one retained legacy script file.
+- [../../VERSIONS/](../../VERSIONS/) - historical release artifacts.
+- [../../src/file_uncorrupter/legacy/](../../src/file_uncorrupter/legacy/) - legacy source evidence.
+- [../../tests/](../../tests/) - current pytest regression suite.
 
 ## Archive Policy
 
-Keep historical reports when they contain useful evidence, decisions, measurements, or context. Move them into `docs/reports/archive/` when they are no longer the current developer entry point.
-
-When a report contains uncertain or future-looking claims, mark it clearly instead of deleting it.
+Keep historical reports when they contain useful evidence, decisions, measurements, or context. Historical reports may retain terminology or filesystem observations that were correct at the time; current repository truth belongs in the current docs and source.

@@ -112,7 +112,7 @@ It deliberately does not ignore `VERSIONS/`, `*.zip`, `*.tar.gz`, `*.patch`, or 
 
 ### Passed
 
-- GitHub compare: branch is ahead of baseline by one commit before this report-finalization commit, with the baseline commit as merge base.
+- GitHub compare: the branch remains strictly ahead of the baseline with the baseline commit as merge base and no behind divergence.
 - GitHub tree readback: all intended new/current canonical files are present; `docs/architecture.md`, `docs/security-model.md`, `docs/testing.md`, and `tests/a.py` are absent.
 - Historical evidence readback: the tracked `VERSIONS/` ZIP archives and `src/file_uncorrupter/legacy/a_2026_04_01.py` remain present.
 - `docs/agent-index.json` parses as JSON after branch readback.
@@ -133,19 +133,20 @@ The configured local Desktop Commander device was offline, and the current execu
 
 - Deployment verification: not applicable; no deployment workflow exists.
 - Website checks (`robots.txt`, sitemap): not applicable; this is not a deployed/indexable website repository.
-- GitHub Actions: no workflow run was associated with the initial PR head commit.
+- GitHub Actions: no repository workflow files are present and no workflow run was associated with the verified PR heads.
 
 ## Git / GitHub State
 
 - Branch: `docs/repository-baseline-20260930`
 - Initial implementation commit: `ff4f2ad7a263e1c0b647d9ad09e56cf5fbea385e`
 - Pull request: #11, `Establish repository documentation and hygiene baseline`
-- Pull request state during validation: open, unmerged
+- Pull request state during final readback: open, unmerged
 - Base branch: `main` at `70fd1188d3a0ff9ea08e526924eada70532cb582`
+- GitHub raw PR readback after report finalization: mergeable `true`, mergeable state `clean`
 - Merge: not performed
 - Release/publication/deployment/tag: not performed
 
-The final head SHA changes when this report-finalization commit is added to the same branch; PR #11 remains the delivery object.
+The head SHA is intentionally not duplicated here; PR #11 is the live delivery object.
 
 ## Remaining Owner Decisions
 

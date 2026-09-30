@@ -1,14 +1,47 @@
+# Python
 __pycache__/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .venv/
 *.pyc
 *.pyo
 *.pyd
-*.sqlite3
-*.db
+*.egg-info/
+
+# Build, coverage, dependency, and framework output
 build/
 dist/
-*.egg-info/
+coverage/
+htmlcov/
+node_modules/
+.cache/
+.next/
+.nuxt/
+
+# Local run state and databases
+*.sqlite3
+*.db
+.uncorrupter-workspace/
+_raw_candidates/
+
+# Temporary and backup material
+/tmp/
+/temp/
+/backup/
+/backups/
+*.bak
+*.old
+*.orig
+*.rej
+*.log
+
+# OS/editor debris
+.DS_Store
+Thumbs.db
 
 # Local Obsidian vault settings
 .obsidian/
+
+# Historical release archives under VERSIONS/ are intentionally tracked.
+# Do not globally ignore *.zip, *.tar.gz, *.patch, or *.diff.

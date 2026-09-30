@@ -2,97 +2,91 @@
 
 Tags: #agent/orientation #repo/index #uncorrupter/recovery
 
-This is the start-here workflow for future Codex runs and other repo agents. It summarizes where to begin, which files are authoritative, what must not be changed casually, and how to keep documentation and project memory current.
-
 ## Start Here
 
 Read in this order before meaningful work:
 
 1. [AGENTS.md](../AGENTS.md)
-2. [Root vault index](../00_Index.md)
+2. [Root index](../00_Index.md)
 3. [Current state](current-state.md)
-4. [Decisions](decisions.md)
+4. [Decision log](decisions.md)
 5. [Documentation index](INDEX.md)
 6. [Project overview](PROJECT-OVERVIEW.md)
 7. [Source map](SOURCE-MAP.md)
 8. [Connection map](CONNECTIONS.md)
-9. [Commands](commands.md)
-10. [Testing notes](testing.md)
+9. [Developer setup](setup/DEVELOPMENT.md)
+10. [Testing and verification](testing/VERIFICATION.md)
+11. [Security model](security/SECURITY.md)
 
-For report and handoff context:
+For durable evidence and deferred work:
 
 - [Root reports index](../reports/INDEX.md)
 - [Root handoffs index](../handoffs/INDEX.md)
 - [Curated documentation reports](reports/INDEX.md)
 
-Machine-readable orientation:
-
-- [agent-index.json](agent-index.json)
+Machine-readable orientation: [agent-index.json](agent-index.json).
 
 ## Source Of Truth
 
-Use this truth order when files disagree:
+Use this order when information conflicts:
 
-1. Current source, package config, tests, and workflows if added later.
-2. `pyproject.toml` and package entry points.
-3. `README.md` and current developer docs under `docs/`.
-4. Root workflow reports under `reports/` and handoffs under `handoffs/`.
-5. Curated historical docs under `docs/reports/`.
-6. Historical release artifacts under `VERSIONS/`.
-7. Clearly marked inferred notes.
+1. Current source, tests, package/build configuration, and live repository state.
+2. Current canonical documentation.
+3. Root reports and handoffs.
+4. Curated historical documentation.
+5. Historical release artifacts.
+6. Explicitly marked inference.
 
-Current implementation facts should come from `src/file_uncorrupter/`, `tests/`, and `pyproject.toml`, not from historical archives.
+Do not treat project-memory notes, old reports, or archives as proof of current implementation.
 
-## Safety Rules
+## Product Boundary
 
-- Preserve existing runtime behavior unless the user explicitly asks for a behavior change.
-- Do not edit release archives under `VERSIONS/` unless explicitly asked.
-- Do not commit, push, deploy, publish, tag, release, reset, stash, or discard changes unless explicitly asked.
-- Do not add secrets, credentials, private keys, tokens, account IDs, private URLs, private certificates, or `.env` contents to docs.
-- Do not claim encryption, auth, telemetry, cloud sync, sandboxing, secure deletion, or deployment support unless current source/docs implement it.
-- Keep `.obsidian/`, `.agents/`, and `.specify/` local-only unless a future explicit decision changes that.
+Current public interface: the `file-uncorrupter` CLI with `scan`, `classify`, `recover`, `benchmark`, and `report`.
 
-## Current Product Shape
+The current repository defines no HTTP API, hosted service, authentication layer, telemetry upload, deployment workflow, or remote service integration.
 
-File Uncorrupter is an offline-first Python CLI. Public commands are defined in [src/file_uncorrupter/cli.py](../src/file_uncorrupter/cli.py):
+## Work And Delivery Rules
 
-- `scan`
-- `classify`
-- `recover`
-- `benchmark`
-- `report`
+- Inspect the live GitHub issue/PR state before material work.
+- Preserve unrelated dirty/untracked local changes.
+- Use `Issue -> branch -> implementation -> verification -> pull request` for material changes.
+- Do not merge, deploy, publish, release, tag, or change repository settings without explicit authorization.
+- Keep changes bounded to the current work object.
 
-The console script is declared in [pyproject.toml](../pyproject.toml) as `file-uncorrupter = "file_uncorrupter.cli:main"`.
+## Security And Privacy Rules
 
-There is no HTTP API, route layer, authentication system, deployment workflow, or remote service integration in the current repo.
+- Treat input media as hostile.
+- Keep source evidence separate from outputs, databases, reports, raw candidates, and workspace state.
+- Do not add secrets, credentials, private paths, private media details, account IDs, private URLs, or `.env` contents.
+- Keep `.obsidian/`, `.agents/`, and `.specify/` local-only unless an explicit repository decision changes that.
 
 ## Update Obligations
 
-After meaningful repo changes:
+After meaningful repository changes, update only the affected canonical surfaces:
 
-- Update [current-state.md](current-state.md) when package purpose, commands, source areas, docs, reports, or open unknowns change.
-- Update [SOURCE-MAP.md](SOURCE-MAP.md) when source/test areas or module responsibilities change.
-- Update [CONNECTIONS.md](CONNECTIONS.md) when docs/source/test/report/handoff links change.
-- Update [agent-index.json](agent-index.json) when paths, commands, safety rules, tags, or known risks change.
-- Add a report under `reports/` for durable validation, review, or implementation evidence.
-- Add a note under `handoffs/` when work is intentionally deferred or a future agent needs context.
+- [current-state.md](current-state.md) for current repository facts.
+- [SOURCE-MAP.md](SOURCE-MAP.md) for source/test responsibilities.
+- [CONNECTIONS.md](CONNECTIONS.md) for documentation/source/test/report relationships.
+- [agent-index.json](agent-index.json) for machine-readable agent paths, commands, rules, and risks.
+- [reports/](../reports/) for durable validation/implementation evidence when required.
+- [handoffs/](../handoffs/) for specific deferred work.
 
 ## Common Verification
 
-Use the smallest check set that matches the work:
+Use the smallest relevant check set:
 
-```powershell
-git status --short
-python -m json.tool .\docs\agent-index.json
+```text
+git status --short --branch
 git diff --check
+python -m json.tool docs/agent-index.json
 python -m pytest
 ```
 
-`python -m pytest` requires pytest in the active environment. If pytest is unavailable, record the exact blocker instead of changing package metadata during a docs-only task.
+`python -m pytest` requires pytest to be installed in the active environment. Record unavailable checks exactly; do not convert unavailable into passed.
 
-## Known Risks
+## Historical Boundaries
 
-- The worktree may contain unrelated dirty release archive changes under `VERSIONS/`.
-- `pyproject.toml` currently declares `0.3.0`, while `src/file_uncorrupter/__init__.py` exposes `__version__ = "0.2.0"`.
-- FFmpeg/ffprobe-dependent behavior and tests depend on local tool availability.
-- Historical reports can contain future-looking or stale claims; treat them as evidence, not current truth.
+- `VERSIONS/` is historical release evidence.
+- `src/file_uncorrupter/legacy/` is historical source evidence.
+- `docs/reports/archive/` is historical research evidence.
+- Historical reports can contain superseded claims; preserve their historical accuracy instead of rewriting them as current docs.

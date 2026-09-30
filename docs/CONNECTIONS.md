@@ -2,70 +2,45 @@
 
 Tags: #repo/connection-map #agent/orientation #uncorrupter/evidence
 
-This map explains how current docs, source, tests, reports, and handoffs should point at each other. Keep it updated when module boundaries, docs hubs, report locations, or handoff practices change.
+## Documentation To Source
 
-## Docs To Source
+- [Architecture](architecture/ARCHITECTURE.md) -> CLI, pipeline, engines, decoders, persistence, workspace.
+- [CLI reference](api/CLI.md) -> `src/file_uncorrupter/cli.py` and `pyproject.toml`.
+- [Security model](security/SECURITY.md) -> local file handling, decoder subprocesses, persistence/privacy boundaries.
+- [Testing](testing/VERIFICATION.md) -> `pyproject.toml` and the current `tests/test_*.py` suite.
+- [Source map](SOURCE-MAP.md) -> every current package and test responsibility.
 
-- [Architecture](architecture/ARCHITECTURE.md) should stay connected to [cli.py](../src/file_uncorrupter/cli.py), [pipeline.py](../src/file_uncorrupter/pipeline.py), [engines](../src/file_uncorrupter/engines/), [decoders.py](../src/file_uncorrupter/decoders.py), [db.py](../src/file_uncorrupter/db.py), and [workspace.py](../src/file_uncorrupter/workspace.py).
-- [CLI reference](api/CLI.md) should stay connected to [cli.py](../src/file_uncorrupter/cli.py) and the console script declaration in [pyproject.toml](../pyproject.toml).
-- [Security](security/SECURITY.md) should stay connected to [decoders.py](../src/file_uncorrupter/decoders.py), [db.py](../src/file_uncorrupter/db.py), local evidence outputs, and the unsupported security properties list.
-- [Testing](testing/VERIFICATION.md) should stay connected to [pyproject.toml](../pyproject.toml) and all current files under [tests](../tests/).
-- [Source map](SOURCE-MAP.md) should stay connected to every current source/test area.
+## Repository Policy To Canonical Docs
+
+- [../SECURITY.md](../SECURITY.md) is the GitHub-discovery security entry point and routes to [security/SECURITY.md](security/SECURITY.md).
+- [../CONTRIBUTING.md](../CONTRIBUTING.md) defines the contribution/delivery workflow and routes to [setup/DEVELOPMENT.md](setup/DEVELOPMENT.md) and [testing/VERIFICATION.md](testing/VERIFICATION.md).
+- [../SUPPORT.md](../SUPPORT.md) defines the supported public support routes without promising an SLA.
 
 ## Source To Tests
 
-- CLI behavior in [cli.py](../src/file_uncorrupter/cli.py) is indirectly covered through recovery and DB-oriented tests; add direct CLI tests if command parsing changes.
-- Intake, signature detection, and kind detection in [intake.py](../src/file_uncorrupter/intake.py), [signature_index.py](../src/file_uncorrupter/signature_index.py), and [constants.py](../src/file_uncorrupter/constants.py) connect to [test_signature_index.py](../tests/test_signature_index.py) and classification/recovery tests.
-- Classification in [classification.py](../src/file_uncorrupter/classification.py) connects to [test_classification.py](../tests/test_classification.py).
-- Candidate engines under [engines](../src/file_uncorrupter/engines/) connect to [test_recovery.py](../tests/test_recovery.py).
-- SQLite persistence in [db.py](../src/file_uncorrupter/db.py) connects to [test_db.py](../tests/test_db.py).
-- Decoder behavior in [decoders.py](../src/file_uncorrupter/decoders.py) connects to [test_recovery.py](../tests/test_recovery.py), with FFmpeg-dependent checks skipped when local tools are unavailable.
+- `classification.py` -> `tests/test_classification.py`
+- `signature_index.py` -> `tests/test_signature_index.py`
+- `db.py` -> `tests/test_db.py`
+- engines/decoders/recovery pipeline -> `tests/test_recovery.py`
 
-## Reports To Implemented Changes
+CLI parsing is currently covered indirectly rather than by a dedicated CLI test module.
 
-Root reports under [reports](../reports/) should capture validation, implementation evidence, and workflow-specific findings. The root [reports index](../reports/INDEX.md) is the routing surface for these notes.
+## Reports And Handoffs
 
-Curated documentation reports under [docs/reports](reports/) preserve documentation reorganizations and historical research. The [curated reports index](reports/INDEX.md) should link archived research and documentation cleanup reports.
+- [../reports/](../reports/) stores durable validation, implementation, and audit evidence.
+- [reports/](reports/) stores curated documentation reports and historical research.
+- [../handoffs/](../handoffs/) stores specific deferred-work notes for a future agent.
 
-When a report changes the current understanding of the repo, update:
+When a report materially changes the current understanding of the repository, update the relevant current-state/map/index documents rather than treating the report itself as canonical implementation truth.
 
-- [current-state.md](current-state.md)
-- [AGENT-INDEX.md](AGENT-INDEX.md)
-- [SOURCE-MAP.md](SOURCE-MAP.md)
-- [agent-index.json](agent-index.json)
+## Work Ledger And Delivery
 
-## Handoffs To Remaining Work
+Material current/future work is tracked in GitHub Issues. Repository changes should normally flow through:
 
-Use [handoffs](../handoffs/) for notes that a later agent should act on. Keep [handoffs/INDEX.md](../handoffs/INDEX.md) current when adding a handoff.
+`Issue -> branch -> implementation -> verification -> pull request`
 
-A handoff should include:
-
-- date
-- scope
-- current state
-- exact files touched or inspected
-- blockers
-- recommended next commands
-- risks and non-goals
-
-## Workflows And Verification
-
-Supported current checks:
-
-- `python -m json.tool .\docs\agent-index.json`
-- `git diff --check`
-- `python -m pytest`
-
-`python -m pytest` depends on pytest being installed in the active environment. If it is unavailable, record the blocker rather than changing dependencies during a docs-only pass.
-
-There is no documented deployment workflow in this repo. Do not add deployment docs that imply production deploy support.
-
-## Decisions And Roadmap
-
-- [decisions.md](decisions.md) is the current decision log placeholder.
-- [docs/reports/archive/001-deep-research-report.md](reports/archive/001-deep-research-report.md) contains historical research and roadmap-like ideas, but those are not current product commitments.
-- Add future ADRs or decision notes only when a real repo decision is made.
+No current deployment workflow exists. A merge must not be described as deployment, publication, or release.
 
 ## Machine-Readable Index
 
-[agent-index.json](agent-index.json) mirrors this map in a compact format for agents and scripts. Keep it repo-relative and free of secrets, private local paths, account identifiers, private URLs, and personal data.
+[agent-index.json](agent-index.json) mirrors the agent-facing paths, commands, safety boundaries, and known risks. Keep it repository-relative and free of secrets or private local information.

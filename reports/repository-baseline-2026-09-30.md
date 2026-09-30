@@ -95,20 +95,65 @@ No global ignore rule was added for `*.zip`, `*.tar.gz`, `*.patch`, `*.diff`, or
 - No `CODE_OF_CONDUCT.md` was selected on the owner's behalf.
 - No maintainer, CODEOWNERS, funding, citation, governance committee, or third-party legal notice data was invented.
 
+## Ignore Rules
+
+`.gitignore` now excludes common Python caches, test/type/lint caches, virtual environments, build/coverage/dependency output, local SQLite state, `.uncorrupter-workspace/`, `_raw_candidates/`, root temp/backup directories, editor/OS debris, and logs/backups.
+
+It deliberately does not ignore `VERSIONS/`, `*.zip`, `*.tar.gz`, `*.patch`, or `*.diff` globally because those patterns can represent intentional repository evidence or inputs.
+
+## Conflicts Corrected
+
+- Current-state and root project-map documentation no longer present absent `CHANGELOG/`, `DOCUMENTATION/`, or `results/` directories as current tracked areas.
+- Agent/testing/security navigation now routes to one canonical document per subject instead of competing scaffold stubs.
+- Old local-worktree claims about dirty `VERSIONS/` files were removed from current-state surfaces; historical reports retain those observations as historical evidence.
+- Current tests are represented by the four configured `tests/test_*.py` files; the duplicate legacy script is no longer presented as a current test artifact.
+
 ## Validation
 
-Validation results are finalized after the branch diff and pull request are read back from GitHub.
+### Passed
 
-Expected relevant checks:
+- GitHub compare: branch is ahead of baseline by one commit before this report-finalization commit, with the baseline commit as merge base.
+- GitHub tree readback: all intended new/current canonical files are present; `docs/architecture.md`, `docs/security-model.md`, `docs/testing.md`, and `tests/a.py` are absent.
+- Historical evidence readback: the tracked `VERSIONS/` ZIP archives and `src/file_uncorrupter/legacy/a_2026_04_01.py` remain present.
+- `docs/agent-index.json` parses as JSON after branch readback.
+- Relative links in every changed Markdown file resolve against the committed GitHub tree.
+- Every changed text file checked has no trailing whitespace and ends with a final newline.
+- Pull-request patch readback reports 27 changed files and no changes under `VERSIONS/`, current `src/file_uncorrupter/` source, `pyproject.toml`, or the four current `tests/test_*.py` modules.
+- Added-line whitespace scan of the pull-request patch found no trailing whitespace.
 
-- GitHub tree/path consistency
-- JSON parse of `docs/agent-index.json`
-- changed relative Markdown-link resolution against the tracked tree
-- diff whitespace inspection
-- repository tests if an executable checkout is available
+### Unavailable
 
-Local checkout checks (`git status`, `git diff --check`, `python -m pytest`) are unavailable in the current environment unless a repository checkout becomes executable. They must not be reported as passed without execution.
+The configured local Desktop Commander device was offline, and the current execution container could not reach GitHub directly to obtain an executable checkout. Therefore these repository-local commands were not run and are not reported as passing:
+
+- `git status --short --branch`
+- `git diff --check`
+- `python -m pytest`
+
+### Not Applicable / Not Run
+
+- Deployment verification: not applicable; no deployment workflow exists.
+- Website checks (`robots.txt`, sitemap): not applicable; this is not a deployed/indexable website repository.
+- GitHub Actions: no workflow run was associated with the initial PR head commit.
+
+## Git / GitHub State
+
+- Branch: `docs/repository-baseline-20260930`
+- Initial implementation commit: `ff4f2ad7a263e1c0b647d9ad09e56cf5fbea385e`
+- Pull request: #11, `Establish repository documentation and hygiene baseline`
+- Pull request state during validation: open, unmerged
+- Base branch: `main` at `70fd1188d3a0ff9ea08e526924eada70532cb582`
+- Merge: not performed
+- Release/publication/deployment/tag: not performed
+
+The final head SHA changes when this report-finalization commit is added to the same branch; PR #11 remains the delivery object.
+
+## Remaining Owner Decisions
+
+- Decide whether to adopt a `CODE_OF_CONDUCT.md`; no standard was selected on the owner's behalf.
+- Confirm or correct package author/legal metadata in `pyproject.toml` if `authors = [{name = "OpenAI"}]` is not intended; this pass deliberately did not infer authorship.
+
+The package-version mismatch, pytest dependency policy, and product/security implementation gaps remain tracked as implementation work in the live issue ledger rather than being converted into owner-policy decisions here.
 
 ## Delivery Boundary
 
-This task authorizes issue/branch/commit/pull-request delivery. It does not authorize merge, tag, release, publication, deployment, or repository-setting changes.
+This task authorized issue/branch/commit/pull-request delivery. It did not authorize merge, tag, release, publication, deployment, or repository-setting changes. PR #11 is intentionally left open.

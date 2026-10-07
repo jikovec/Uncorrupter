@@ -47,10 +47,10 @@ Current implementation facts should come from `src/file_uncorrupter/`, `tests/`,
 
 - Preserve existing runtime behavior unless the user explicitly asks for a behavior change.
 - Do not edit release archives under `VERSIONS/` unless explicitly asked.
-- Do not commit, push, deploy, publish, tag, release, reset, stash, or discard changes unless explicitly asked.
+- Follow [authorization](../.agent/contracts/authorization.md) for scoped source delivery and separate consequential effects.
 - Do not add secrets, credentials, private keys, tokens, account IDs, private URLs, private certificates, or `.env` contents to docs.
 - Do not claim encryption, auth, telemetry, cloud sync, sandboxing, secure deletion, or deployment support unless current source/docs implement it.
-- Keep `.obsidian/`, `.agents/`, and `.specify/` local-only unless a future explicit decision changes that.
+- Keep `.obsidian/`, `.agents/` and `.specify/` local-only; share native discovery pointers in `.codex/skills/` and `.claude/skills/`.
 
 ## Current Product Shape
 
@@ -64,7 +64,7 @@ File Uncorrupter is an offline-first Python CLI. Public commands are defined in 
 
 The console script is declared in [pyproject.toml](../pyproject.toml) as `file-uncorrupter = "file_uncorrupter.cli:main"`.
 
-There is no HTTP API, route layer, authentication system, deployment workflow, or remote service integration in the current repo.
+There is no hosted application deployment workflow. GitHub source/work management is described in the [integration contract](../.agent/integrations/github.md).
 
 ## Update Obligations
 
@@ -96,3 +96,9 @@ python -m pytest
 - `pyproject.toml` currently declares `0.3.0`, while `src/file_uncorrupter/__init__.py` exposes `__version__ = "0.2.0"`.
 - FFmpeg/ffprobe-dependent behavior and tests depend on local tool availability.
 - Historical reports can contain future-looking or stale claims; treat them as evidence, not current truth.
+
+## Reusable workflows
+
+Use [the toolkit index](../.agent/README.md) for skill selection, shared contracts,
+provider adapters and scoped source delivery. [Project metadata](../.agent/project.yaml)
+is stable identity; current state and handoffs carry dated evidence.

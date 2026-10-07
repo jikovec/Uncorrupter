@@ -22,3 +22,18 @@
 - inferred means the repository shape suggests the command, but it was not directly declared as a script.
 - pytest is configured in pyproject.toml, but pytest itself is not declared as a package dependency.
 - .env and other secret-bearing files were not read.
+
+## Agent toolkit checks
+
+Run from the repository root with the declared Python runtime:
+
+```sh
+python .agent/hooks/validate-toolkit/validate.py
+python .agent/hooks/validate-toolkit/test_validate.py
+python -m json.tool docs/agent-index.json
+git diff --check
+```
+
+[Canonical skills](../.agent/README.md) are agent workflows, not shell commands.
+Use `push` for source delivery and `deploy` for a configured live target; the old
+local deploy-as-push command is superseded by the toolkit adoption.

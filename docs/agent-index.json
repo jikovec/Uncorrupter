@@ -1,7 +1,7 @@
 {
   "repo_name": "File Uncorrupter",
   "repo_purpose": "Offline-first Python CLI for scanning, classifying, and recovering damaged visual media with SQLite evidence tracking, JPEG-focused repair strategies, baseline image/video carving, optional FFmpeg-assisted salvage, and JSON/CSV reporting.",
-  "last_reviewed": "2026-07-09",
+  "last_reviewed": "2026-10-07",
   "primary_languages": [
     "Python"
   ],
@@ -27,8 +27,13 @@
     "historical_archives": "VERSIONS/",
     "curated_reports": "docs/reports/",
     "local_obsidian_settings": ".obsidian/",
-    "local_spec_kit_agents": ".agents/",
-    "local_spec_kit_config": ".specify/"
+    "local_spec_kit_config": ".specify/",
+    "agent_toolkit": ".agent/README.md",
+    "agent_project": ".agent/project.yaml",
+    "canonical_skills": "skills/",
+    "codex_adapters": ".codex/skills/",
+    "claude_adapters": ".claude/skills/",
+    "claude_instructions": "CLAUDE.md"
   },
   "docs_entry_points": [
     "docs/INDEX.md",
@@ -43,7 +48,9 @@
     "docs/testing/VERIFICATION.md",
     "docs/security/SECURITY.md",
     "reports/INDEX.md",
-    "handoffs/INDEX.md"
+    "handoffs/INDEX.md",
+    ".agent/README.md",
+    "docs/agent-workflow.md"
   ],
   "source_areas": [
     {
@@ -121,6 +128,8 @@
       "python -m pytest"
     ],
     "docs_validation": [
+      "python .agent/hooks/validate-toolkit/validate.py",
+      "python .agent/hooks/validate-toolkit/test_validate.py",
       "python -m json.tool .\\docs\\agent-index.json",
       "git diff --check"
     ],
@@ -147,7 +156,7 @@
   "safety_rules": [
     "Preserve existing runtime behavior unless explicitly asked to change it.",
     "Do not edit source, tests, package metadata, release archives, deployment config, cloud/account settings, encryption setup, or secrets during docs-only work.",
-    "Do not commit, push, deploy, publish, tag, release, reset, stash, or discard changes unless explicitly asked.",
+    "Follow .agent/contracts/authorization.md for ordinary scoped source delivery through merge; release/deploy/publish and destructive actions retain separate authority boundaries.",
     "Treat source, package config, and tests as higher-priority truth than docs and historical reports.",
     "Do not invent project history, architecture, security guarantees, workflows, deployment support, roadmap items, or decisions.",
     "Record exact blockers when validation cannot be run."
@@ -156,7 +165,7 @@
     "Do not include secrets, credentials, private keys, tokens, private certificates, account IDs, private URLs, private media paths, or .env contents in docs.",
     "Keep machine-specific absolute paths out of repo docs and JSON indexes.",
     "Keep .obsidian/ ignored.",
-    "Keep .agents/ and .specify/ local-only unless a future explicit decision changes that.",
+    "Keep .agents/ and .specify/ local-only; shared native adapters live in .codex/skills/ and .claude/skills/.",
     "Do not treat generated recovery outputs, SQLite databases, JSON reports, CSV reports, or raw candidates as anonymized public artifacts."
   ],
   "obsidian_conventions": {
@@ -218,7 +227,9 @@
     "pytest is configured but not declared as a package dependency.",
     "FFmpeg/ffprobe-dependent behavior and tests depend on local tool availability.",
     "Historical reports and release artifacts are evidence, not current implementation truth.",
-    "No deployment workflow is documented in this repo."
+    "No deployment workflow is documented in this repo.",
+    "Mind-Seed registry and memory bindings are unverified; no enrollment or memory mutation is implied.",
+    "Native discovery is provider/version dependent; static link validation is not proof of a loaded session."
   ],
   "omitted_artifacts": [
     {
@@ -243,7 +254,7 @@
     },
     {
       "path": ".agents/index.json",
-      "reason": ".agents/ is local-only ignored Spec Kit scaffolding in this repo."
+      "reason": "Use docs/agent-index.json for the machine index; .agents/ remains ignored local scaffolding."
     }
   ]
 }

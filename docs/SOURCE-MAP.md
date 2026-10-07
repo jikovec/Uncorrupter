@@ -131,3 +131,10 @@ Related docs:
 - [tests/test_signature_index.py](../tests/test_signature_index.py) covers anywhere signature detection for prefixed MP4 data.
 - [tests/test_db.py](../tests/test_db.py) covers run summary counts, duplicate candidate persistence, and successful output summaries.
 - [tests/test_recovery.py](../tests/test_recovery.py) covers JPEG recovery strategies, candidate generation, standard color tables, and FFmpeg-gated prefixed MP4 recovery.
+
+## Development agent infrastructure
+
+[AGENTS.md](../AGENTS.md) routes to [.agent/](../.agent/README.md) shared contracts,
+[skills/](../skills/) reasoning workflows and thin native provider adapters.
+[Toolkit validation](../.agent/hooks/README.md) checks structure and links without
+running recovery code or reading private inputs.

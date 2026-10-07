@@ -69,3 +69,12 @@ There is no documented deployment workflow in this repo. Do not add deployment d
 ## Machine-Readable Index
 
 [agent-index.json](agent-index.json) mirrors this map in a compact format for agents and scripts. Keep it repo-relative and free of secrets, private local paths, account identifiers, private URLs, and personal data.
+
+## Agent toolkit connections
+
+[Project identity](../.agent/project.yaml) → [root instructions](../AGENTS.md) →
+[canonical workflows](../skills/) → [shared project processes](../.agent/workflows/README.md).
+Native adapters point to canonical skills; [routing cases](../.agent/evals/skill-routing.md)
+and [structural validation](../.agent/hooks/README.md) check different properties.
+Policy adoption is recorded in [decisions](decisions.md); observed delivery evidence
+belongs in the [bootstrap handoff](../handoffs/2026-10-07-agent-toolkit.md).

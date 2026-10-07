@@ -149,3 +149,10 @@ This repo root is configured as an Obsidian vault for project documentation and 
 ### Testing Commands
 - python -m pytest - explicit README command, source: README.md; detail: README documented command
 <!-- /codex-memory-scaffold:project-map -->
+
+## Repository agent toolkit
+
+- [Toolkit and canonical workflows](.agent/README.md)
+- [Portable project identity](.agent/project.yaml)
+- [Workflow compatibility index](docs/agent-workflow.md)
+- [Bootstrap handoff](handoffs/2026-10-07-agent-toolkit.md)

@@ -47,3 +47,5 @@ Examples:
 - Link relevant docs, source, tests, and reports.
 - Do not store secrets, private paths, private media details, account IDs, tokens, credentials, or private URLs.
 - Do not use a handoff to invent product commitments, roadmap items, unsupported security guarantees, or deployment status.
+
+- [2026-10-07 repository agent toolkit](2026-10-07-agent-toolkit.md)

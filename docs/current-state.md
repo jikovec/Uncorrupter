@@ -67,7 +67,7 @@
 - [docs/OBSIDIAN.md](OBSIDIAN.md) documents local-first Obsidian usage. `.obsidian/` remains ignored.
 - [docs/SOURCE-MAP.md](SOURCE-MAP.md) maps source and test areas.
 - [docs/CONNECTIONS.md](CONNECTIONS.md) maps docs, source, tests, reports, and handoffs.
-- `.agents/` and `.specify/` are local-only Spec Kit scaffolding ignored by `.git/info/exclude`.
+- `.agents/` and `.specify/` remain local-only. The toolkit shares thin `.codex/skills/` and `.claude/skills/` adapters.
 
 ## Important Commands Found
 - python -m pip install -e . - explicit README command, source: README.md; detail: README documented command
@@ -80,3 +80,12 @@
 - Confirm future handoff naming conventions when root handoffs/ starts receiving notes.
 - Historical archives under VERSIONS/ and docs/reports/archive/ are preserved as evidence, not authoritative current behavior.
 - Human review is still needed for any dirty release archive changes under VERSIONS/.
+
+## Agent toolkit — 2026-10-07
+
+The [portable toolkit](../.agent/README.md) establishes shared contracts, stable
+repository-qualified identity, canonical skills and thin provider adapters.
+The [adoption decision](decisions.md) covers ordinary scoped source workflow through
+merge while preserving separate release/deployment gates and external protections.
+This changes development guidance only. See the [handoff](../handoffs/2026-10-07-agent-toolkit.md)
+for checks, isolated delivery and unavailable registry/provider evidence.

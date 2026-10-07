@@ -88,3 +88,11 @@ local `deploy` and `uncorrupter-workflow` copies so duplicate native names do no
 remain, preserving unrelated Spec Kit files and the recovery candidate. The validator
 fails clearly on those legacy duplicate names. This is a checkout integration concern,
 not a reason to publish the unrelated candidate.
+
+## Source delivery reference
+
+[PR #12](https://github.com/jikovec/Uncorrupter/pull/12) carries only this toolkit
+change through the authorized source workflow. Consult its live head, checks and
+merge record for delivery state; this static handoff does not substitute for them.
+The implementation commit is `0af7139d35b452e11f5f200acf4d9abb734b6450`;
+subsequent receipt-only updates do not change the validated workflow behavior.

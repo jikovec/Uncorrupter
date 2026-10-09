@@ -29,6 +29,31 @@ def _json_default(value):
 def _json_dumps(value, *, sort_keys: bool = False) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=sort_keys, default=_json_default)
 
+
+_SQLITE_INT_MIN = -(2**63)
+_SQLITE_INT_MAX = 2**63 - 1
+_WIDE_ID_PREFIX = "x"
+
+
+def _encode_file_id(value: int) -> int | str:
+    """Store a device/inode ID losslessly; Windows can report 128-bit file IDs."""
+    if _SQLITE_INT_MIN <= value <= _SQLITE_INT_MAX:
+        return value
+    # A non-numeric TEXT value keeps INTEGER affinity from coercing it to a lossy REAL.
+    return f"{_WIDE_ID_PREFIX}{value:x}" if value >= 0 else f"-{_WIDE_ID_PREFIX}{-value:x}"
+
+
+def _decode_file_id(value) -> int:
+    if value is None:
+        return 0
+    if isinstance(value, str):
+        negative = value.startswith("-")
+        digits = value[1:] if negative else value
+        if digits.startswith(_WIDE_ID_PREFIX):
+            decoded = int(digits[len(_WIDE_ID_PREFIX):], 16)
+            return -decoded if negative else decoded
+    return int(value)
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS runs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -516,8 +541,8 @@ def insert_file(conn: sqlite3.Connection, run_id: int, record: FileRecord, class
             classification.confidence if classification else None,
             _json_dumps(classification.evidence) if classification else None,
             record.modified_ns,
-            record.device_id,
-            record.inode_id,
+            _encode_file_id(record.device_id),
+            _encode_file_id(record.inode_id),
         ),
     )
     file_id = int(cursor.lastrowid)
@@ -996,8 +1021,8 @@ def source_identity_matches(row: sqlite3.Row, record: FileRecord) -> bool:
         int(row["size"]) == record.size
         and str(row["sha256"]) == record.sha256
         and int(row["modified_ns"] or 0) == record.modified_ns
-        and int(row["device_id"] or 0) == record.device_id
-        and int(row["inode_id"] or 0) == record.inode_id
+        and _decode_file_id(row["device_id"]) == record.device_id
+        and _decode_file_id(row["inode_id"]) == record.inode_id
     )
 
 

@@ -87,3 +87,25 @@ def test_summary_counts_successful_image_outputs(tmp_path):
 
     assert summary["recovered"] == 1
     assert summary["by_output_type"]["image"] == 1
+
+
+def test_wide_windows_file_ids_persist_and_match_resume_identity(tmp_path):
+    # Python 3.12+ on Windows can report 128-bit st_ino/st_dev values (for example ReFS/Dev Drive).
+    db_path = tmp_path / "runs.sqlite3"
+    image_path = tmp_path / "sample.jpg"
+    image_path.write_bytes(b"\xff\xd8abc\xff\xd9")
+    data = image_path.read_bytes()
+    record = build_file_record(tmp_path, image_path, data)
+    record.device_id = 2**64 + 7
+    record.inode_id = 2**127 + 12345
+
+    from file_uncorrupter.db import fetch_resume_files, insert_file, source_identity_matches
+
+    with connect(db_path) as conn:
+        run_id = start_run(conn, "scan", tmp_path, None, "baseline-v2", workspace_root=tmp_path / ".uncorrupter-workspace", config={})
+        insert_file(conn, run_id, record, classify_record(record, data))
+        row = fetch_resume_files(conn, run_id)[str(record.relative_path)]
+
+    assert source_identity_matches(row, record)
+    record.inode_id += 1
+    assert not source_identity_matches(row, record)

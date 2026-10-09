@@ -1,154 +1,113 @@
 # Uncorrupter
 
-This repo root is configured as an Obsidian vault for project documentation and working context.
+Tags: #repo/index #uncorrupter/recovery #uncorrupter/evidence #obsidian/local
 
-## Entry Points
-- [docs/INDEX.md](docs/INDEX.md)
-- [docs/AGENT-INDEX.md](docs/AGENT-INDEX.md)
-- [docs/OBSIDIAN.md](docs/OBSIDIAN.md)
-- [LICENSE](LICENSE)
-- [README.md](README.md)
+File Uncorrupter `0.4.0` is a local, bounded, evidence-preserving recovery CLI for damaged text, archives, documents, PDF, images, audio, and video containers. Support depth is operation-specific; start with executable capabilities and current evidence rather than historical extension lists.
 
-## Project Overview
-- [docs/PROJECT-OVERVIEW.md](docs/PROJECT-OVERVIEW.md)
-- [README.md](README.md)
+## Start Here
 
-## Architecture
-- [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
-- [docs/SOURCE-MAP.md](docs/SOURCE-MAP.md)
-- [docs/CONNECTIONS.md](docs/CONNECTIONS.md)
+1. [Repository instructions](AGENTS.md)
+2. [Current state](docs/current-state.md)
+3. [Executable capability baseline](docs/capabilities.generated.md)
+4. [Capabilities and roadmap](docs/CAPABILITIES-AND-ROADMAP.md)
+5. [Benchmark ground-truth schema](docs/BENCHMARK-GROUND-TRUTH.md)
+6. [Architecture](docs/architecture/ARCHITECTURE.md)
+7. [Agent orientation](docs/AGENT-INDEX.md)
+8. [Source map](docs/SOURCE-MAP.md)
+9. [Connection map](docs/CONNECTIONS.md)
 
-## Security And Compliance
-- [docs/security/SECURITY.md](docs/security/SECURITY.md)
+- [Current project card](docs/PROJECT-OVERVIEW.md#current-project-card--2026-09-09)
+- [Project AI workflow](docs/agent-workflow.md)
+- [2026-09-09 orientation handoff](handoffs/2026-09-09-local-orientation.md)
 
-## Commands Setup And Operations
-- [docs/setup/DEVELOPMENT.md](docs/setup/DEVELOPMENT.md)
+## User Documentation
 
-## Testing And Verification
-- [docs/testing/VERIFICATION.md](docs/testing/VERIFICATION.md)
+- [README](README.md)
+- [Project overview](docs/PROJECT-OVERVIEW.md)
+- [CLI reference](docs/api/CLI.md)
+- [Benchmark ground-truth schema and metrics](docs/BENCHMARK-GROUND-TRUTH.md)
+- [Security and local data handling](docs/security/SECURITY.md)
+- [Testing and verification](docs/testing/VERIFICATION.md)
+- [Developer setup](docs/setup/DEVELOPMENT.md)
+- [Commands](docs/commands.md)
+- [Changelog and candidate release notes](docs/releases/CHANGELOG.md)
 
-## Releases And Changelogs
-- [docs/releases/CHANGELOG.md](docs/releases/CHANGELOG.md)
+## Architecture And Decisions
 
-## Reports And Handoffs
-- [reports/INDEX.md](reports/INDEX.md)
-- [reports/2026-07-07-memory-workflow-validation.md](reports/2026-07-07-memory-workflow-validation.md)
-- [reports/obsidian-agent-indexing-plan.md](reports/obsidian-agent-indexing-plan.md)
-- [reports/obsidian-agent-indexing-implementation-2026-07-09.md](reports/obsidian-agent-indexing-implementation-2026-07-09.md)
-- [reports/obsidian-agent-indexing-audit-2026-07-09.md](reports/obsidian-agent-indexing-audit-2026-07-09.md)
-- [reports/](reports/)
-- [handoffs/INDEX.md](handoffs/INDEX.md)
-- [handoffs/](handoffs/)
-- [docs/reports/archive/001-deep-research-report.md](docs/reports/archive/001-deep-research-report.md)
-- [docs/reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md](docs/reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md)
-- [docs/reports/INDEX.md](docs/reports/INDEX.md)
+- [Architecture](docs/architecture/ARCHITECTURE.md)
+- [Decisions](docs/decisions.md)
+- [Source map](docs/SOURCE-MAP.md)
+- [Connection map](docs/CONNECTIONS.md)
+- [Machine-readable agent index](docs/agent-index.json)
 
-## Other Existing Notes
-- [docs/api/CLI.md](docs/api/CLI.md)
+## Current Evidence
 
-## Working Notes
-- [[docs/INDEX|Documentation index]]
-- [[docs/AGENT-INDEX|Agent orientation]]
-- [[docs/OBSIDIAN|Obsidian guide]]
-- [[docs/SOURCE-MAP|Source map]]
-- [[docs/CONNECTIONS|Connection map]]
-- [[reports/INDEX|Root reports index]]
-- [[handoffs/INDEX|Handoffs index]]
-- [[docs/PROJECT-OVERVIEW|Project overview]]
-- [[docs/architecture/ARCHITECTURE|Architecture]]
-- [[docs/commands|Commands]]
-- [[docs/current-state|Current state]]
-- [[docs/decisions|Decisions]]
-- [[docs/security-model|Security model]]
-- [[docs/testing|Testing]]
+- [Stabilized multi-format implementation report](reports/2026-08-05-stabilized-multiformat-implementation.md)
+- [Stabilized multi-format handoff](handoffs/2026-08-05-stabilized-multiformat-recovery.md)
+- [Pre-stabilization current-state/roadmap assessment](reports/2026-07-26-current-state-and-roadmap-assessment.md)
+- [Declared-video/embedded-JPEG classification handoff](handoffs/2026-07-26-video-jpeg-misclassification-fix.md)
+- [Reports index](reports/INDEX.md)
+- [Handoffs index](handoffs/INDEX.md)
+
+## Runtime Map
+
+```text
+CLI
+  -> layout/config/capability checks
+  -> deterministic intake and immutable byte source
+  -> signatures and independent classification evidence
+  -> registered handler inspect / explicit goal plan / execute
+  -> bounded optional tools and atomic artifacts
+  -> SQLite schema v2 plus JSONL events
+  -> JSON/CSV/text/benchmark reports
+```
+
+Primary source areas:
+
+- `src/file_uncorrupter/cli.py`
+- `src/file_uncorrupter/pipeline.py`
+- `src/file_uncorrupter/handlers/`
+- `src/file_uncorrupter/byte_source.py`
+- `src/file_uncorrupter/budgets.py`
+- `src/file_uncorrupter/atomic.py`
+- `src/file_uncorrupter/process_runner.py`
+- `src/file_uncorrupter/db.py`
+- `src/file_uncorrupter/reporting.py`
+- `src/file_uncorrupter/benchmarking.py`
+- `tests/`
+
+## Primary Commands
+
+```powershell
+python -m pip install -e ".[dev]"
+file-uncorrupter capabilities --format json
+file-uncorrupter scan .\input --recursive --all-files --db .\runs.sqlite3
+file-uncorrupter classify .\input --recursive --all-files --db .\runs.sqlite3
+file-uncorrupter recover .\input .\output --recursive --all-files --goal repair --goal extract --db .\runs.sqlite3
+$env:UNCORRUPTER_DISABLE_EXTERNAL_TOOLS = "1"
+python -m pytest -p no:cacheprovider -q
+python -m build
+```
+
+## Authority And Boundaries
+
+- Current source, `pyproject.toml`, tests, and executable capabilities outrank historical docs/release archives.
+- Local green tests are not CI execution, deployment, release, or broad corpus proof.
+- Recovery outputs/databases/reports can contain private data and are not public by default.
+- Input files are immutable; output paths are separate, contained, atomic, and no-clobber by default.
+- Optional tools do not grant permission, safety, or full-fidelity support.
+- Source delivery follows [authorization](.agent/contracts/authorization.md); release, deployment and publication keep separate authority boundaries.
+
+## Local-Only Notes
+
+- [Obsidian guide](docs/OBSIDIAN.md) documents a local-first plaintext vault; `.obsidian/` remains ignored.
+- `.agents/` and `.specify/` remain local-only workflow scaffolding.
+- `.uncorrupter-workspace/`, `output/`, `single-input/`, databases, and reports are local evidence/generated material.
+- `VERSIONS/`, `CHANGELOG/`, `DOCUMENTATION/`, and archived reports are historical evidence, not current runtime authority.
 
 ## Maintenance
-- Keep this index additive. Link existing docs instead of moving, renaming, or duplicating them.
-- Store handoff notes in handoffs/ and generated review summaries in reports/ when they are useful to keep in the repo.
-- Keep Obsidian local-first and plaintext. Do not track `.obsidian/` settings or add cloud/account/sync/encryption setup.
-- After meaningful changes, update docs/current-state.md, docs/agent-index.json, and the relevant source or connection map when they are affected.
 
-
-<!-- codex-memory-scaffold:project-map -->
-## Project Map
-
-### Purpose
-- File Uncorrupter is an offline-first Python CLI for scanning, classifying, and recovering damaged visual media. The current package is a modular recovery framework with SQLite evidence tracking, JPEG-focused repair strategies, baseline image/video carving, and optional FFmpeg-assisted video salvage.
-
-### Apparent Stack
-- Python (pyproject.toml, requirements.txt, or root Python files present)
-
-### Key Source And Project Folders
-- CHANGELOG
-- docs
-- DOCUMENTATION
-- handoffs
-- reports
-- results
-- src
-- tests
-- VERSIONS
-
-### Memory Notes
-- [[docs/AGENT-INDEX|Agent orientation]]
-- [[docs/SOURCE-MAP|Source map]]
-- [[docs/CONNECTIONS|Connection map]]
-- [[docs/OBSIDIAN|Obsidian guide]]
-- [[docs/current-state|Current state]]
-- [[docs/decisions|Decisions]]
-- [[docs/commands|Commands]]
-- [[docs/testing|Testing]]
-- [[docs/security-model|Security model]]
-- handoffs/ for future handoff notes.
-- reports/ for future review and validation reports.
-
-### Existing Docs Linked During Setup
-- [AGENTS.md](AGENTS.md)
-- [LICENSE](LICENSE)
-- [README.md](README.md)
-- [docs/AGENT-INDEX.md](docs/AGENT-INDEX.md)
-- [docs/CONNECTIONS.md](docs/CONNECTIONS.md)
-- [docs/api/CLI.md](docs/api/CLI.md)
-- [docs/architecture.md](docs/architecture.md)
-- [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
-- [docs/agent-index.json](docs/agent-index.json)
-- [docs/commands.md](docs/commands.md)
-- [docs/current-state.md](docs/current-state.md)
-- [docs/decisions.md](docs/decisions.md)
-- [docs/INDEX.md](docs/INDEX.md)
-- [docs/OBSIDIAN.md](docs/OBSIDIAN.md)
-- [docs/PROJECT-OVERVIEW.md](docs/PROJECT-OVERVIEW.md)
-- [docs/releases/CHANGELOG.md](docs/releases/CHANGELOG.md)
-- [docs/reports/archive/001-deep-research-report.md](docs/reports/archive/001-deep-research-report.md)
-- [docs/reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md](docs/reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md)
-- [docs/reports/INDEX.md](docs/reports/INDEX.md)
-- [docs/security-model.md](docs/security-model.md)
-- [docs/security/SECURITY.md](docs/security/SECURITY.md)
-- [docs/SOURCE-MAP.md](docs/SOURCE-MAP.md)
-- [docs/setup/DEVELOPMENT.md](docs/setup/DEVELOPMENT.md)
-- [docs/testing.md](docs/testing.md)
-- [docs/testing/VERIFICATION.md](docs/testing/VERIFICATION.md)
-
-### Reports And Handoffs
-- [reports/INDEX.md](reports/INDEX.md)
-- [reports/2026-07-07-memory-workflow-validation.md](reports/2026-07-07-memory-workflow-validation.md)
-- [reports/obsidian-agent-indexing-plan.md](reports/obsidian-agent-indexing-plan.md)
-- [reports/obsidian-agent-indexing-implementation-2026-07-09.md](reports/obsidian-agent-indexing-implementation-2026-07-09.md)
-- [reports/obsidian-agent-indexing-audit-2026-07-09.md](reports/obsidian-agent-indexing-audit-2026-07-09.md)
-- [reports/](reports/)
-- [handoffs/INDEX.md](handoffs/INDEX.md)
-- [handoffs/](handoffs/)
-- [docs/reports/archive/001-deep-research-report.md](docs/reports/archive/001-deep-research-report.md)
-- [docs/reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md](docs/reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md)
-- [docs/reports/INDEX.md](docs/reports/INDEX.md)
-
-### README, Changelogs, And Release Notes
-- [README.md](README.md)
-- [docs/releases/CHANGELOG.md](docs/releases/CHANGELOG.md)
-
-### Testing Commands
-- python -m pytest - explicit README command, source: README.md; detail: README documented command
-<!-- /codex-memory-scaffold:project-map -->
+When paths, commands, capabilities, safety rules, or known risks change, update the executable tests, generated capability baseline, relevant narrative docs, `docs/agent-index.json`, and a dated report/handoff. Preserve existing user-owned and unrelated dirty worktree changes.
 
 ## Repository agent toolkit
 

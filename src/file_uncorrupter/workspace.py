@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .atomic import AtomicArtifactWriter, CollisionError
 
 @dataclass(slots=True)
 class WorkspaceLayout:
@@ -25,17 +26,22 @@ class WorkspaceLayout:
 
     def store_blob(self, data: bytes, suffix: str = ".bin") -> Path:
         digest = hashlib.sha256(data).hexdigest()
-        leaf = self.blobs_dir / digest[:2]
-        leaf.mkdir(parents=True, exist_ok=True)
-        path = leaf / f"{digest}{suffix}"
-        if not path.exists():
-            path.write_bytes(data)
-        return path
+        relative = Path(digest[:2]) / f"{digest}{suffix}"
+        path = self.blobs_dir / relative
+        if path.exists():
+            if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                raise RuntimeError(f"content-addressed blob collision at {path}")
+            return path
+        try:
+            return AtomicArtifactWriter(self.blobs_dir).publish_bytes(relative, data).path
+        except CollisionError:
+            if path.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == digest:
+                return path
+            raise
 
     def write_config_snapshot(self, run_id: int, config: dict[str, Any]) -> Path:
-        path = self.configs_dir / f"run-{run_id:06d}.json"
-        path.write_text(json.dumps(config, indent=2, ensure_ascii=False), encoding="utf-8")
-        return path
+        payload = (json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+        return AtomicArtifactWriter(self.configs_dir).publish_bytes(f"run-{run_id:06d}.json", payload).path
 
 
 def build_workspace_layout(

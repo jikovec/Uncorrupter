@@ -23,3 +23,8 @@ dist/
 !skills/build/
 !.codex/skills/build/
 !.claude/skills/build/
+
+# Local recovery workspaces, outputs, and ad hoc input samples
+/.uncorrupter-workspace/
+/output/
+/single-input/

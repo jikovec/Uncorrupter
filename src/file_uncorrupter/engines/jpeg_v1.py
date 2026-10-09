@@ -367,9 +367,9 @@ class JPEGRecoveryEngineV1(RecoveryEngine):
                 provenance=provenance or [],
                 meta=meta,
             )
-            if candidate.dedupe_hash in seen:
+            if candidate.strategy_hash in seen:
                 return
-            seen.add(candidate.dedupe_hash)
+            seen.add(candidate.strategy_hash)
             candidates.append(candidate)
 
         add("full_file", data, 100, provenance=[{"kind": "whole_file"}])

@@ -1,33 +1,148 @@
 {
+  "schema_version": 2,
   "repo_name": "File Uncorrupter",
-  "repo_purpose": "Offline-first Python CLI for scanning, classifying, and recovering damaged visual media with SQLite evidence tracking, JPEG-focused repair strategies, baseline image/video carving, optional FFmpeg-assisted salvage, and JSON/CSV reporting.",
+  "repo_identity": "jikovec/Uncorrupter",
+  "repo_purpose": "Offline-first bounded and evidence-preserving recovery of damaged text, archives, documents, PDF, images, audio, and video containers.",
+  "application_version": "0.4.0",
   "last_reviewed": "2026-10-09",
+  "evidence_state": {
+    "implemented": true,
+    "locally_tested": true,
+    "synthetic_fixture_based": true,
+    "remote_ci_exact_commit_verified": false,
+    "live_verified": false,
+    "deployed": false,
+    "released": false
+  },
+  "authority_order": [
+    "AGENTS.md and current user scope",
+    "src/file_uncorrupter and pyproject.toml",
+    "tests and executable capability output",
+    "docs/current-state.md and docs/decisions.md",
+    "dated reports and handoffs",
+    "historical archives"
+  ],
   "primary_languages": [
     "Python"
   ],
   "frameworks_and_tools": [
+    "Python 3.11-3.13",
     "setuptools",
     "pytest",
     "Pillow",
     "SQLite",
-    "optional ffmpeg",
-    "optional ffprobe",
-    "Obsidian local vault"
+    "optional ffmpeg and ffprobe",
+    "optional qpdf",
+    "optional 7-Zip",
+    "optional LibreOffice",
+    "GitHub Actions",
+    "Obsidian local plaintext vault"
+  ],
+  "public_commands": [
+    "capabilities",
+    "scan",
+    "classify",
+    "recover",
+    "benchmark",
+    "report"
+  ],
+  "recovery_goals": [
+    "repair",
+    "normalize",
+    "extract",
+    "preview",
+    "carve"
+  ],
+  "outcome_grades": [
+    "validated_original",
+    "validated_normalized",
+    "partial_content",
+    "preview_only",
+    "unavailable_dependency",
+    "budget_exceeded",
+    "cancelled",
+    "failed"
+  ],
+  "capability_families": [
+    {
+      "family": "text",
+      "variants": ["txt", "markdown", "log", "csv", "json", "xml", "html"],
+      "boundary": "Encoding-aware byte-preserving recovery, span maps, normalization, and structure diagnostics."
+    },
+    {
+      "family": "archive",
+      "variants": ["zip", "tar"],
+      "boundary": "Streaming contained extraction and conservative bounded reconstruction/resynchronization under expansion and member budgets."
+    },
+    {
+      "family": "package_document",
+      "variants": ["docx", "docm", "xlsx", "xlsm", "pptx", "pptm", "odt", "ods", "odp"],
+      "boundary": "Streaming package validation and separately graded part/text/media recovery; active content remains inert."
+    },
+    {
+      "family": "pdf",
+      "variants": ["pdf"],
+      "boundary": "Incremental native structure, conservative repair, partial extraction, and optional qpdf repair plus exact-output validation."
+    },
+    {
+      "family": "jpeg",
+      "variants": ["jpeg"],
+      "boundary": "Candidate-based structural repair with independent decoder validation and derivative grading."
+    },
+    {
+      "family": "image",
+      "variants": ["png", "gif", "bmp", "webp", "tiff", "heif", "avif", "jp2", "raw"],
+      "boundary": "Native structure for common images; optional codec-dependent preview/write behavior for complex formats."
+    },
+    {
+      "family": "media",
+      "variants": ["mp4", "mov", "mkv", "webm", "avi", "mpegts", "mpegps", "flv", "asf", "wmv", "wav", "mp3", "flac", "aac", "ogg"],
+      "boundary": "Streaming structural inspection and partial native repair/carve; FFmpeg/ffprobe conditionally enable validated copy-remux, stream extraction, and one-frame preview."
+    },
+    {
+      "family": "external_archive",
+      "variants": ["7z", "rar"],
+      "boundary": "Detection/inspection and conditional 7-Zip extraction with explicit encryption, solid, and multivolume outcomes."
+    },
+    {
+      "family": "rtf",
+      "variants": ["rtf"],
+      "boundary": "Partial inert text extraction/preview only."
+    },
+    {
+      "family": "legacy_office",
+      "variants": ["doc", "xls", "ppt"],
+      "boundary": "OLE inspection and conditional LibreOffice/soffice conversion to a natively validated inert PDF preview; no editable recovery."
+    }
   ],
   "important_paths": {
     "root_index": "00_Index.md",
+    "project_card": "docs/PROJECT-OVERVIEW.md",
+    "agent_workflow": "docs/agent-workflow.md",
+    "local_environment": ".codex/environments/environment.toml",
     "agent_rules": "AGENTS.md",
     "readme": "README.md",
     "package_config": "pyproject.toml",
     "source_root": "src/file_uncorrupter/",
+    "handlers": "src/file_uncorrupter/handlers/",
     "tests_root": "tests/",
-    "docs_root": "docs/",
-    "root_reports": "reports/",
-    "handoffs": "handoffs/",
+    "fixtures": "tests/fixtures.py",
+    "mutations": "tests/mutations.py",
+    "capability_baseline": "docs/capabilities.generated.md",
+    "current_state": "docs/current-state.md",
+    "decisions": "docs/decisions.md",
+    "architecture": "docs/architecture/ARCHITECTURE.md",
+    "source_map": "docs/SOURCE-MAP.md",
+    "connection_map": "docs/CONNECTIONS.md",
+    "security": "docs/security/SECURITY.md",
+    "testing": "docs/testing/VERIFICATION.md",
+    "cli_reference": "docs/api/CLI.md",
+    "benchmark_ground_truth": "docs/BENCHMARK-GROUND-TRUTH.md",
+    "implementation_report": "reports/2026-08-05-stabilized-multiformat-implementation.md",
+    "current_handoff": "handoffs/2026-09-09-local-orientation.md",
     "historical_archives": "VERSIONS/",
-    "curated_reports": "docs/reports/",
     "local_obsidian_settings": ".obsidian/",
-    "local_spec_kit_config": ".specify/",
+    "local_spec_kit": ".specify/",
     "agent_toolkit": ".agent/README.md",
     "agent_project": ".agent/project.yaml",
     "canonical_skills": "skills/",
@@ -35,155 +150,118 @@
     "claude_adapters": ".claude/skills/",
     "claude_instructions": "CLAUDE.md"
   },
-  "docs_entry_points": [
-    "docs/INDEX.md",
-    "docs/AGENT-INDEX.md",
-    "docs/PROJECT-OVERVIEW.md",
-    "docs/SOURCE-MAP.md",
-    "docs/CONNECTIONS.md",
-    "docs/OBSIDIAN.md",
-    "docs/api/CLI.md",
-    "docs/architecture/ARCHITECTURE.md",
-    "docs/setup/DEVELOPMENT.md",
-    "docs/testing/VERIFICATION.md",
-    "docs/security/SECURITY.md",
-    "reports/INDEX.md",
-    "handoffs/INDEX.md",
-    ".agent/README.md",
-    "docs/agent-workflow.md"
-  ],
   "source_areas": [
-    {
-      "path": "src/file_uncorrupter/cli.py",
-      "role": "CLI parser, command arguments, command dispatch, run startup, summary printing"
-    },
-    {
-      "path": "src/file_uncorrupter/pipeline.py",
-      "role": "scan, classify, recover, score, write outputs, and persist recovery evidence"
-    },
-    {
-      "path": "src/file_uncorrupter/intake.py",
-      "role": "input file iteration, byte reads, hashes, declared kind, and file records"
-    },
-    {
-      "path": "src/file_uncorrupter/signature_index.py",
-      "role": "byte-0 and anywhere-in-blob signature detection"
-    },
-    {
-      "path": "src/file_uncorrupter/classification.py",
-      "role": "family, label, confidence, and classification evidence"
-    },
-    {
-      "path": "src/file_uncorrupter/engines/",
-      "role": "candidate generation engines including jpeg-v1 and baseline-v2"
-    },
-    {
-      "path": "src/file_uncorrupter/decoders.py",
-      "role": "Pillow and FFmpeg/ffprobe probing, saving, remuxing, previews, frames, and output hashes"
-    },
-    {
-      "path": "src/file_uncorrupter/scoring.py",
-      "role": "successful candidate scoring"
-    },
-    {
-      "path": "src/file_uncorrupter/db.py",
-      "role": "SQLite schema, migrations, persistence, summaries, and attempts rows"
-    },
-    {
-      "path": "src/file_uncorrupter/reporting.py",
-      "role": "JSON summary and attempts CSV export"
-    },
-    {
-      "path": "src/file_uncorrupter/workspace.py",
-      "role": "local workspace layout and config snapshots"
-    },
-    {
-      "path": "src/file_uncorrupter/legacy/",
-      "role": "historical source evidence, not current behavior authority"
-    }
+    {"path": "src/file_uncorrupter/cli.py", "role": "Commands, layout/config, lifecycle, resume, reports, exit policy."},
+    {"path": "src/file_uncorrupter/pipeline.py", "role": "Deterministic analyze/process coordination and persistence bridge."},
+    {"path": "src/file_uncorrupter/byte_source.py", "role": "Immutable bounded streaming/random source access, seekable parser adapter, and identity checks."},
+    {"path": "src/file_uncorrupter/budgets.py", "role": "Resource defaults and hierarchical fail-before-consume counters."},
+    {"path": "src/file_uncorrupter/paths.py", "role": "Layout and containment validation."},
+    {"path": "src/file_uncorrupter/atomic.py", "role": "Atomic no-clobber artifact publication."},
+    {"path": "src/file_uncorrupter/process_runner.py", "role": "Unified bounded optional-tool and required-isolation boundary."},
+    {"path": "src/file_uncorrupter/capabilities.py", "role": "Handler-derived executable support manifest and quality gate."},
+    {"path": "src/file_uncorrupter/handlers/", "role": "Format capability, inspect, plan, and execute owners."},
+    {"path": "src/file_uncorrupter/db.py", "role": "SQLite schema version 2, migrations, evidence, summaries, resume queries."},
+    {"path": "src/file_uncorrupter/events.py", "role": "Durable JSONL and path pseudonymization."},
+    {"path": "src/file_uncorrupter/reporting.py", "role": "Manifest, CSV, text, benchmark metrics, outcome grades, and redaction."},
+    {"path": "src/file_uncorrupter/benchmarking.py", "role": "Ground-truth validation/evaluation and main-process RSS sampling."}
   ],
   "test_areas": [
-    {
-      "path": "tests/test_classification.py",
-      "coverage": "JPEG classification labels for missing EOI and missing SOI with internal structure"
-    },
-    {
-      "path": "tests/test_signature_index.py",
-      "coverage": "anywhere signature detection for prefixed MP4 data"
-    },
-    {
-      "path": "tests/test_db.py",
-      "coverage": "run summary counts, duplicate candidate persistence, and successful image output summaries"
-    },
-    {
-      "path": "tests/test_recovery.py",
-      "coverage": "JPEG recovery strategies, candidate generation, standard color tables, and FFmpeg-gated prefixed MP4 recovery"
-    }
+    {"path": "tests/test_budgets_and_byte_source.py", "coverage": "Limits, streaming, sparse files, slices, source changes."},
+    {"path": "tests/test_atomic_and_paths.py", "coverage": "Layout, containment, collision, atomic publication."},
+    {"path": "tests/test_process_runner.py", "coverage": "Timeout, cancellation, bounded output, minimal environment, cleanup, tool identity, isolation."},
+    {"path": "tests/test_run_lifecycle.py", "coverage": "Immutability, per-file durability, cancellation, resume, determinism, and exhaustive report outcome grades."},
+    {"path": "tests/test_cli.py", "coverage": "Commands, goals, layout, reports/events, resume, and exhaustive exit policies."},
+    {"path": "tests/test_benchmarking.py", "coverage": "Ground-truth validation, false positives/negatives, per-group metrics, and RSS evidence."},
+    {"path": "tests/test_streaming_handlers.py", "coverage": "Zero-materialization archive/package/PDF/TIFF/media paths and large-ZIP memory regression."},
+    {"path": "tests/test_determinism.py", "coverage": "Stable candidates and fixtures independent of process hash seed."},
+    {"path": "tests/test_capabilities.py", "coverage": "Manifest completeness, unique ownership, fixture evidence, generated-doc drift."},
+    {"path": "tests/test_mutation_inventory.py", "coverage": "Every public family and required mutation class."},
+    {"path": "tests/test_multiformat_integration.py", "coverage": "Representative cross-family routing, artifacts, and persistence."},
+    {"path": "tests/test_packaging.py", "coverage": "Single version source, dev dependencies, CI shape, package metadata."}
   ],
   "commands": {
     "install": [
-      "python -m pip install -e ."
+      "python -m pip install -e .",
+      "python -m pip install -e \".[dev]\""
     ],
-    "test": [
-      "python -m pytest"
+    "deterministic_test": [
+      "$env:UNCORRUPTER_DISABLE_EXTERNAL_TOOLS = \"1\"",
+      "$env:PYTHONDONTWRITEBYTECODE = \"1\"",
+      "python -m pytest -p no:cacheprovider -q"
+    ],
+    "focused_governance": [
+      "python -m pytest -p no:cacheprovider -q tests/test_capabilities.py tests/test_mutation_inventory.py tests/test_packaging.py",
+      "python -m pytest -p no:cacheprovider -q tests/test_streaming_handlers.py tests/test_benchmarking.py"
+    ],
+    "build": [
+      "python -m compileall -q src tests",
+      "python -m build"
     ],
     "docs_validation": [
       "python .agent/hooks/validate-toolkit/validate.py",
       "python .agent/hooks/validate-toolkit/test_validate.py",
-      "python -m json.tool .\\docs\\agent-index.json",
+      "python -m json.tool ./docs/agent-index.json",
       "git diff --check"
     ],
-    "cli": [
-      "file-uncorrupter scan .\\input --recursive --all-files --db .\\runs.sqlite3",
-      "file-uncorrupter classify .\\input --recursive --all-files --db .\\runs.sqlite3",
-      "file-uncorrupter recover .\\input .\\output --recursive --all-files --db .\\runs.sqlite3 --save-raw-candidates",
-      "file-uncorrupter benchmark .\\input .\\output --recursive --all-files --db .\\runs.sqlite3 --output-json .\\benchmark.json --output-csv .\\attempts.csv",
-      "file-uncorrupter report --db .\\runs.sqlite3 --run-id 1 --output-json .\\report.json --output-csv .\\attempts.csv"
+    "cli_examples": [
+      "file-uncorrupter capabilities --format json",
+      "file-uncorrupter scan ./input --recursive --all-files --db ./runs.sqlite3",
+      "file-uncorrupter classify ./input --recursive --all-files --db ./runs.sqlite3",
+      "file-uncorrupter recover ./input ./output --recursive --all-files --goal repair --goal extract --db ./runs.sqlite3",
+      "file-uncorrupter benchmark ./input ./output --recursive --all-files --goal repair --ground-truth ./corpus-ground-truth.json --db ./runs.sqlite3",
+      "file-uncorrupter report --db ./runs.sqlite3 --run-id 1 --output-json ./report.json"
     ]
-  },
-  "report_locations": {
-    "root_workflow_reports": "reports/",
-    "curated_documentation_reports": "docs/reports/",
-    "historical_research_archive": "docs/reports/archive/"
-  },
-  "handoff_locations": {
-    "root_handoffs": "handoffs/"
-  },
-  "decision_locations": {
-    "current_decision_log": "docs/decisions.md",
-    "future_adr_location": "docs/adr/ if explicitly created later"
   },
   "safety_rules": [
-    "Preserve existing runtime behavior unless explicitly asked to change it.",
-    "Do not edit source, tests, package metadata, release archives, deployment config, cloud/account settings, encryption setup, or secrets during docs-only work.",
+    "Never write through an input path or weaken source identity checks.",
+    "Preserve existing outputs and publish only through the contained atomic writer.",
+    "Keep every expensive operation under the shared resource budget and cancellation contract.",
+    "Run optional tools only through the unified process runner; required isolation must fail closed.",
+    "Do not execute active content or guess/bypass passwords or encryption.",
+    "Do not advertise a goal until exact artifacts are published, validated, graded, persisted, and tested.",
+    "Keep extension, byte-zero, anywhere-signature, and structural evidence distinct.",
+    "Do not store raw source payloads in SQLite, JSONL, or reports.",
+    "Preserve user-owned and unrelated dirty worktree changes.",
     "Follow .agent/contracts/authorization.md for ordinary scoped source delivery through merge; release/deploy/publish and destructive actions retain separate authority boundaries.",
     "Claude Code loads the release, deploy and publish adapters only on an explicit /release, /deploy or /publish (disable-model-invocation: true); keep canonical skills and Codex adapters name/description only.",
-    "Treat source, package config, and tests as higher-priority truth than docs and historical reports.",
-    "Do not invent project history, architecture, security guarantees, workflows, deployment support, roadmap items, or decisions.",
-    "Record exact blockers when validation cannot be run."
+    "Keep .agents/ and .specify/ local-only; shared native adapters live in .codex/skills/ and .claude/skills/."
   ],
   "sensitive_path_rules": [
-    "Do not include secrets, credentials, private keys, tokens, private certificates, account IDs, private URLs, private media paths, or .env contents in docs.",
-    "Keep machine-specific absolute paths out of repo docs and JSON indexes.",
-    "Keep .obsidian/ ignored.",
-    "Keep .agents/ and .specify/ local-only; shared native adapters live in .codex/skills/ and .claude/skills/.",
-    "Do not treat generated recovery outputs, SQLite databases, JSON reports, CSV reports, or raw candidates as anonymized public artifacts."
+    "Do not document or commit secrets, tokens, credentials, cookies, keys, .env contents, private URLs, or private user data.",
+    "Treat recovery outputs, databases, events, manifests, CSV, text reports, member names, hashes, and local paths as potentially sensitive.",
+    "Keep .obsidian ignored and local-first.",
+    "Keep .agents and .specify local-only unless an explicit project decision changes this.",
+    "Do not add real user files as fixtures; use synthetic license-safe data."
   ],
-  "obsidian_conventions": {
-    "mode": "local-first plaintext documentation vault",
-    "canonical_links": "normal Markdown links",
-    "wiki_links": "allowed sparingly in hub notes for Obsidian graph navigation",
-    "ignored_settings": ".obsidian/",
-    "graph_hubs": [
-      "00_Index.md",
-      "docs/INDEX.md",
-      "docs/AGENT-INDEX.md",
-      "docs/SOURCE-MAP.md",
-      "docs/CONNECTIONS.md",
-      "reports/INDEX.md",
-      "handoffs/INDEX.md"
-    ]
-  },
+  "preserved_local_state": [
+    "docs/OBSIDIAN.md user-owned edits",
+    "declared-video embedded-JPEG classifier fix and tests",
+    "handoffs/2026-07-26-video-jpeg-misclassification-fix.md",
+    ".uncorrupter-workspace/",
+    "output/",
+    "single-input/"
+  ],
+  "known_risks": [
+    "2026-09-09 host review found Python absent from PATH on that host; a 2026-10-09 Linux host ran the deterministic suite with Python 3.12 in a disposable virtualenv.",
+    "The 0.4.0 candidate is delivered on a source branch; local results are not exact-commit CI proof until its remote run completes.",
+    "Package author metadata says OpenAI; repository ownership is jikovec and authorship intent remains unresolved.",
+    "GitHub Actions matrix is defined but exact-commit remote execution is unverified in the current report.",
+    "Synthetic fixtures and the ground-truth mechanism do not establish a broad real-world recovery rate or support threshold without a labeled corpus.",
+    "Main-process RSS is sampled, but child-tool memory is excluded; corrupt reconstruction, large text, decoded rasters/frames, and third-party codecs retain bounded resource risks.",
+    "Media normalize, extract, and preview require both FFmpeg and ffprobe and remain narrow remux/stream/one-frame claims.",
+    "Renderer-backed PDF/Office extraction, optional image codec coverage, and real qpdf/7z/RAR/LibreOffice tool-present matrices need deeper work.",
+    "No bundled OS sandbox, adversarial fuzzing campaign, or independent security assessment exists.",
+    "No release, package publication, deployment, or live verification has been performed.",
+    "Mind-Seed registry and memory bindings are unverified; no enrollment or memory mutation is implied.",
+    "Native discovery is provider/version dependent; static link validation is not proof of a loaded session."
+  ],
+  "update_obligations": [
+    "Update tests before or with behavioral changes.",
+    "Update docs/capabilities.generated.md after intentional capability changes and keep the drift gate green.",
+    "Update current state, architecture, source map, connection map, security, testing, and CLI docs when their contracts change.",
+    "Update this machine index whenever paths, commands, tags, safety rules, capability families, or known risks change.",
+    "Add or update a dated report and handoff after substantive work."
+  ],
   "tag_taxonomy": {
     "global": [
       "#repo/index",
@@ -198,64 +276,30 @@
       "#agent/orientation",
       "#agent/handoff",
       "#agent/report",
-      "#obsidian/local",
-      "#obsidian/graph"
+      "#obsidian/local"
     ],
     "repo_specific": [
       "#uncorrupter/cli",
       "#uncorrupter/recovery",
-      "#uncorrupter/jpeg",
+      "#uncorrupter/capabilities",
+      "#uncorrupter/text",
+      "#uncorrupter/archives",
+      "#uncorrupter/documents",
+      "#uncorrupter/pdf",
+      "#uncorrupter/images",
       "#uncorrupter/video",
-      "#uncorrupter/ffmpeg",
+      "#uncorrupter/audio",
       "#uncorrupter/sqlite",
       "#uncorrupter/evidence",
-      "#uncorrupter/signature-detection",
-      "#uncorrupter/testing",
-      "#uncorrupter/history",
-      "#uncorrupter/release-artifacts"
+      "#uncorrupter/security",
+      "#uncorrupter/testing"
     ],
     "avoid_until_supported": [
       "#repo/cloud",
       "#repo/auth",
-      "#repo/encryption",
       "#repo/telemetry",
-      "#repo/production-deploy"
+      "#repo/production-deploy",
+      "#uncorrupter/released"
     ]
-  },
-  "known_risks": [
-    "The worktree may contain unrelated dirty release archive changes under VERSIONS/.",
-    "pyproject.toml declares version 0.3.0 while src/file_uncorrupter/__init__.py exposes __version__ = \"0.2.0\".",
-    "pytest is configured but not declared as a package dependency.",
-    "FFmpeg/ffprobe-dependent behavior and tests depend on local tool availability.",
-    "Historical reports and release artifacts are evidence, not current implementation truth.",
-    "No deployment workflow is documented in this repo.",
-    "Mind-Seed registry and memory bindings are unverified; no enrollment or memory mutation is implied.",
-    "Native discovery is provider/version dependent; static link validation is not proof of a loaded session."
-  ],
-  "omitted_artifacts": [
-    {
-      "path": "docs/ARCHITECTURE.md",
-      "reason": "Existing docs/architecture/ARCHITECTURE.md is the canonical architecture doc."
-    },
-    {
-      "path": "docs/DEVELOPMENT.md",
-      "reason": "Existing docs/setup/DEVELOPMENT.md is the canonical development doc."
-    },
-    {
-      "path": "docs/TESTING.md",
-      "reason": "Existing docs/testing/VERIFICATION.md and docs/testing.md cover testing guidance."
-    },
-    {
-      "path": "docs/SECURITY.md",
-      "reason": "Existing docs/security/SECURITY.md is the canonical security doc."
-    },
-    {
-      "path": "docs/DECISIONS.md",
-      "reason": "Existing docs/decisions.md is the current decision log."
-    },
-    {
-      "path": ".agents/index.json",
-      "reason": "Use docs/agent-index.json for the machine index; .agents/ remains ignored local scaffolding."
-    }
-  ]
+  }, "agentWorkflow": {"guide": "docs/agent-workflow.md", "toolkit": ".agent/README.md", "skill": "skills/project/uncorrupter-workflow/SKILL.md", "scope": "compatibility index; canonical workflows and authorization live in the repository toolkit"}
 }

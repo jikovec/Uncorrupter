@@ -73,3 +73,20 @@
 - After meaningful work, update current state or add a dated handoff.
 - Update `docs/agent-index.json` when paths, commands, safety rules or known risks change.
 - Report outcomes and blockers with evidence under the [handoff contract](.agent/contracts/handoff.md).
+
+## GitHub Pro repository memory
+
+<!-- github-pro-memory:2026-07-30 -->
+- Identity: `jikovec/Uncorrupter`; visibility: public; remote default: `main`; personal-account repository where applicable.
+- Observed state (2026-07-30): protection: not protected; Pages: not enabled; wiki enabled: False; observed Actions runs: 0 in the fixed 2026-06-30..2026-07-30 window.
+- Use selectively: Public CI matrix for deterministic tests; Main status-check protection; GitHub Releases for binaries; Optional public documentation Pages
+- Explicitly avoid: GitHub Packages for Python distribution or sample media; Codespaces with private/corrupt user files; Mandatory approval while solo; Wiki duplication
+- Actions: provisional private-minute allocation **0/month**; priority: public standard runners are free; keep tests bounded and use synthetic fixtures. Exact billed minutes remain unverified.
+- Branch target: After CI exists, protect main with exact passing tests, conversation resolution and blocked force-push/deletion; no mandatory approval while solo.
+- CODEOWNERS: Defer while solo; later separate recovery core, format handlers and packaging/security fixtures.
+- Packages: Use PyPI if a Python package is intentionally published and GitHub Releases for binaries; never store recovery inputs in Packages.
+- Codespaces: Low value and unsafe for real user media; an optional 2-core synthetic-fixture test environment may be considered but is not recommended now.
+- Pages/wiki: Public documentation/API reference is a valid low-priority candidate because the repository is already public; exclude sample user media and internal security notes. Keep repository Markdown authoritative.
+- Pending remote action only: Design public CI in a separate workflow task; Apply status-check protection after checks are stable; Optionally design sanitized public docs Pages
+- Safety: this is local guidance only. It does not authorize commit, push, PR, deployment, publication, workflow execution, remote settings, collaborators or billing. Preserve all stricter project-specific no-push/no-deploy and protected-path rules above.
+- Central authority: `F:\Desktop\work\_project-memory\docs\github-pro\README.md`.

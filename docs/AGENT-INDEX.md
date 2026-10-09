@@ -1,104 +1,140 @@
 # Future-Agent Orientation
 
-Tags: #agent/orientation #repo/index #uncorrupter/recovery
-
-This is the start-here workflow for future Codex runs and other repo agents. It summarizes where to begin, which files are authoritative, what must not be changed casually, and how to keep documentation and project memory current.
+Last reconciled with source and local verification: 2026-08-08.
 
 ## Start Here
 
 Read in this order before meaningful work:
 
-1. [AGENTS.md](../AGENTS.md)
-2. [Root vault index](../00_Index.md)
-3. [Current state](current-state.md)
-4. [Decisions](decisions.md)
-5. [Documentation index](INDEX.md)
-6. [Project overview](PROJECT-OVERVIEW.md)
-7. [Source map](SOURCE-MAP.md)
-8. [Connection map](CONNECTIONS.md)
-9. [Commands](commands.md)
-10. [Testing notes](testing.md)
+1. [`AGENTS.md`](../AGENTS.md)
+2. [`00_Index.md`](../00_Index.md)
+3. [`docs/current-state.md`](current-state.md)
+4. [`docs/decisions.md`](decisions.md)
+5. [`docs/SOURCE-MAP.md`](SOURCE-MAP.md)
+6. [`docs/CONNECTIONS.md`](CONNECTIONS.md)
+7. [`docs/capabilities.generated.md`](capabilities.generated.md)
+8. the relevant dated report and handoff
+9. the source/tests for the behavior being changed
 
-For report and handoff context:
+For format work, also read [Capabilities and roadmap](CAPABILITIES-AND-ROADMAP.md), [Architecture](architecture/ARCHITECTURE.md), [Security](security/SECURITY.md), and [Testing](testing/VERIFICATION.md).
 
-- [Root reports index](../reports/INDEX.md)
-- [Root handoffs index](../handoffs/INDEX.md)
-- [Curated documentation reports](reports/INDEX.md)
+## Latest orientation review
 
-Machine-readable orientation:
+The [2026-09-09 project card](PROJECT-OVERVIEW.md#current-project-card--2026-09-09) reconciles the accessible dirty local candidate with committed main and records host runtime prerequisites. The verification date above belongs to historical implementation evidence. Use proportionate documentation checks for orientation-only changes; the full suite below applies to behavior work.
 
-- [agent-index.json](agent-index.json)
+## Current Product Truth
 
-## Source Of Truth
+- Package/runtime candidate: `0.4.0`, single source in `src/file_uncorrupter/__init__.py`.
+- Python: 3.11+; defined CI matrix through 3.13 on Windows and Ubuntu.
+- Product: local bounded recovery CLI for text, archives, packages/documents, PDF, images, audio/video containers, RTF, and conditional external adapters.
+- Evidence: SQLite schema version 2, JSONL events, JSON manifest, CSV, and text.
+- Public commands: `capabilities`, `scan`, `classify`, `recover`, `benchmark`, `report`.
+- Public goals: `repair`, `normalize`, `extract`, `preview`, `carve`.
+- Capability authority: registered handler records and the live `capabilities` command.
+- Checked documentation baseline: external tools disabled, `docs/capabilities.generated.md`.
+- Current evidence level: implemented and locally tested with synthetic fixtures; not deployed or live-verified.
 
-Use this truth order when files disagree:
+## Hard Safety Rules
 
-1. Current source, package config, tests, and workflows if added later.
-2. `pyproject.toml` and package entry points.
-3. `README.md` and current developer docs under `docs/`.
-4. Root workflow reports under `reports/` and handoffs under `handoffs/`.
-5. Curated historical docs under `docs/reports/`.
-6. Historical release artifacts under `VERSIONS/`.
-7. Clearly marked inferred notes.
-
-Current implementation facts should come from `src/file_uncorrupter/`, `tests/`, and `pyproject.toml`, not from historical archives.
-
-## Safety Rules
-
-- Preserve existing runtime behavior unless the user explicitly asks for a behavior change.
-- Do not edit release archives under `VERSIONS/` unless explicitly asked.
-- Follow [authorization](../.agent/contracts/authorization.md) for scoped source delivery and separate consequential effects.
-- Do not add secrets, credentials, private keys, tokens, account IDs, private URLs, private certificates, or `.env` contents to docs.
-- Do not claim encryption, auth, telemetry, cloud sync, sandboxing, secure deletion, or deployment support unless current source/docs implement it.
+- Preserve source immutability and no-clobber atomic publication.
+- Do not bypass `FileByteSource`, `BudgetTracker`, `CancellationToken`, `AtomicArtifactWriter`, or `run_process` for new handler work.
+- Do not add an extension to public capabilities without an owning handler, operation levels, fixtures/mutations, validators, limits, artifact semantics, and fidelity boundary.
+- Do not silently substitute one recovery goal for another.
+- Do not call a decoder/tool success full recovery without validating the exact published artifact.
+- Never execute embedded active content or guess passwords.
+- Keep optional-tool-absent behavior functional and deterministic.
+- Preserve per-file persistence and resume history.
+- Do not store raw source bytes in SQLite/events/reports.
 - Keep `.obsidian/`, `.agents/` and `.specify/` local-only; share native discovery pointers in `.codex/skills/` and `.claude/skills/`.
+- Follow [authorization](../.agent/contracts/authorization.md) for scoped source delivery and separate consequential effects.
 
-## Current Product Shape
+## Dirty Worktree And Authored-Scope Boundary
 
-File Uncorrupter is an offline-first Python CLI. Public commands are defined in [src/file_uncorrupter/cli.py](../src/file_uncorrupter/cli.py):
+At the end of the stabilization work, the repository already contained or retained unrelated/user-owned local state:
 
-- `scan`
-- `classify`
-- `recover`
-- `benchmark`
-- `report`
+- `docs/OBSIDIAN.md` user-owned edits;
+- the declared-video/embedded-JPEG classifier change, `tests/test_classification.py`, and `handoffs/2026-07-26-video-jpeg-misclassification-fix.md`;
+- `.uncorrupter-workspace/`, `output/`, and `single-input/` local generated/test material;
+- local-only `.agents/`, `.specify/`, and ignored editor/config paths.
 
-The console script is declared in [pyproject.toml](../pyproject.toml) as `file-uncorrupter = "file_uncorrupter.cli:main"`.
+Never reset, clean, overwrite, stage, or mix these merely to simplify a task. Refresh `git status` and relevant diffs before editing.
 
-There is no hosted application deployment workflow. GitHub source/work management is described in the [integration contract](../.agent/integrations/github.md).
+## Key Source Ownership
 
-## Update Obligations
+| Area | Owner |
+| --- | --- |
+| CLI/lifecycle/resume/exit policy | `src/file_uncorrupter/cli.py` |
+| Coordinator/persistence bridge | `src/file_uncorrupter/pipeline.py` |
+| Immutable sources | `byte_source.py`, `intake.py` |
+| Limits/cancellation | `budgets.py`, `cancellation.py` |
+| Paths/publication | `paths.py`, `atomic.py` |
+| Optional tools | `process_runner.py`, `decoders.py` |
+| Capabilities/registry | `capabilities.py`, `handlers/base.py`, `handlers/registry.py` |
+| Format behavior | `handlers/*.py` |
+| Evidence/migrations | `db.py` |
+| Events/reports | `events.py`, `reporting.py` |
+| Benchmark labels/metrics/RSS | `benchmarking.py`, `cli.py`, `reporting.py` |
+| Fixtures/mutations | `tests/fixtures.py`, `tests/mutations.py`, `tests/test_mutation_inventory.py` |
 
-After meaningful repo changes:
+Use [SOURCE-MAP.md](SOURCE-MAP.md) for the complete source-to-test map.
 
-- Update [current-state.md](current-state.md) when package purpose, commands, source areas, docs, reports, or open unknowns change.
-- Update [SOURCE-MAP.md](SOURCE-MAP.md) when source/test areas or module responsibilities change.
-- Update [CONNECTIONS.md](CONNECTIONS.md) when docs/source/test/report/handoff links change.
-- Update [agent-index.json](agent-index.json) when paths, commands, safety rules, tags, or known risks change.
-- Add a report under `reports/` for durable validation, review, or implementation evidence.
-- Add a note under `handoffs/` when work is intentionally deferred or a future agent needs context.
+## Required Verification Pattern
 
-## Common Verification
-
-Use the smallest check set that matches the work:
+Start focused, then run the full deterministic suite:
 
 ```powershell
-git status --short
-python -m json.tool .\docs\agent-index.json
+$env:UNCORRUPTER_DISABLE_EXTERNAL_TOOLS = "1"
+$env:PYTHONDONTWRITEBYTECODE = "1"
+python -m pytest -p no:cacheprovider -q
+python -m compileall -q src tests
+python -m build
+python -m json.tool .\docs\agent-index.json > $null
 git diff --check
-python -m pytest
 ```
 
-`python -m pytest` requires pytest in the active environment. If pytest is unavailable, record the exact blocker instead of changing package metadata during a docs-only task.
+Run optional-tool-present checks separately and report exact versions/skips. Validate capability/doc equality after handler changes. See [testing/VERIFICATION.md](testing/VERIFICATION.md).
 
-## Known Risks
+## Known Open Gates
 
-- The worktree may contain unrelated dirty release archive changes under `VERSIONS/`.
-- `pyproject.toml` currently declares `0.3.0`, while `src/file_uncorrupter/__init__.py` exposes `__version__ = "0.2.0"`.
-- FFmpeg/ffprobe-dependent behavior and tests depend on local tool availability.
-- Historical reports can contain future-looking or stale claims; treat them as evidence, not current truth.
+- GitHub Actions has a workflow definition but exact-commit remote execution is unverified in the stabilization report.
+- The corpus is synthetic and representative, not a broad labeled real-world benchmark.
+- False-positive/false-negative metrics require explicit ground-truth labels; the implemented RSS sampler excludes child-process memory.
+- Public archive, package, PDF, TIFF/image, and media paths stream, but corrupt reconstruction, large text, decoded rasters/frames, and some third-party codecs retain bounded memory/disk limitations.
+- Media normalize/extract/preview is conditional on both FFmpeg and ffprobe; keep tool-absent behavior explicit and validate the exact published hash.
+- PDF renderer-backed coverage, optional image codecs, and real qpdf/7z/RAR/LibreOffice tool-present matrices need deeper validation.
+- No bundled sandbox or independent defensive security audit exists.
+- No release/publication/deployment has been performed.
+
+## Documentation Update Obligations
+
+When behavior changes, update all affected surfaces:
+
+- handler capability record and tests;
+- `docs/capabilities.generated.md`;
+- README/CLI/current state/roadmap as applicable;
+- architecture/source/connection maps if ownership or flow changes;
+- security/testing docs if a boundary or gate changes;
+- `docs/agent-index.json` for paths, commands, tags, safety rules, or risks;
+- a dated report and handoff for substantive work.
+
+Do not update `docs/OBSIDIAN.md` unless the task directly requires it and existing user edits are reconciled.
+
+## Evidence And Handoff
+
+- Current implementation report: [`reports/2026-08-05-stabilized-multiformat-implementation.md`](../reports/2026-08-05-stabilized-multiformat-implementation.md)
+- Current handoff: [`handoffs/2026-08-05-stabilized-multiformat-recovery.md`](../handoffs/2026-08-05-stabilized-multiformat-recovery.md)
+- Earlier classification handoff: [`handoffs/2026-07-26-video-jpeg-misclassification-fix.md`](../handoffs/2026-07-26-video-jpeg-misclassification-fix.md)
+- Reports index: [`reports/INDEX.md`](../reports/INDEX.md)
+- Handoffs index: [`handoffs/INDEX.md`](../handoffs/INDEX.md)
+
+## Obsidian Conventions
+
+The repository root may be opened as a local-first plaintext vault. Normal Markdown links are canonical. `.obsidian/` remains ignored and must not be repurposed for cloud sync, accounts, or encryption setup. See [OBSIDIAN.md](OBSIDIAN.md).
 
 ## Reusable workflows
 
 Use [the toolkit index](../.agent/README.md) for skill selection, shared contracts,
 provider adapters and scoped source delivery. [Project metadata](../.agent/project.yaml)
 is stable identity; current state and handoffs carry dated evidence.
+
+There is no hosted application deployment workflow. GitHub source/work management is described in the [integration contract](../.agent/integrations/github.md).

@@ -65,19 +65,20 @@ python -m pytest -p no:cacheprovider -q tests\test_capabilities.py
 
 Review and patch `docs/capabilities.generated.md` only when handler truth intentionally changes.
 
-## Local Agent Command
+## Agent toolkit checks
 
-`$deploy [optional context]` is a local-only agent workflow at `.agents/skills/deploy/SKILL.md`. When the user explicitly invokes it, it publishes the active branch to the same-named GitHub branch, waits for remote tests on the exact pushed commit, and may repair task-owned repository CI failures.
+Run from the repository root with the declared Python runtime:
 
-It does not authorize:
+```sh
+python .agent/hooks/validate-toolkit/validate.py
+python .agent/hooks/validate-toolkit/test_validate.py
+python -m json.tool docs/agent-index.json
+git diff --check
+```
 
-- changing branches;
-- pull/merge/rebase or force-push;
-- unrelated staging/commits;
-- pull requests, releases, package publication, Pages, or production deployment;
-- workflow dispatch, runner/billing changes, or secret changes.
-
-A push without exact-SHA remote tests is blocked evidence, not a green deployment. Do not invoke `$deploy` during ordinary local implementation unless the user explicitly requests it.
+[Canonical skills](../.agent/README.md) are agent workflows, not shell commands.
+Use `push` for source delivery and `deploy` for a configured live target; the old
+local deploy-as-push command is superseded by the toolkit adoption.
 
 ## Command Sources
 
@@ -87,7 +88,7 @@ A push without exact-SHA remote tests is blocked evidence, not a green deploymen
 | `python -m pytest` | `pyproject.toml` dev dependency and pytest config |
 | `python -m build` | `pyproject.toml` build system and dev dependency |
 | capability/doc gates | `tests/test_capabilities.py`, `tests/test_packaging.py` |
-| `$deploy` | local-only `.agents/skills/deploy/SKILL.md` |
+| agent toolkit checks | `.agent/hooks/validate-toolkit/` |
 
 ## Safety Notes
 

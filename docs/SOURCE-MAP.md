@@ -113,3 +113,10 @@ When a path, command, capability, safety rule, or known risk changes, update:
 3. the relevant source/architecture/current-state docs;
 4. `docs/agent-index.json`;
 5. a dated report or handoff for substantive changes.
+
+## Development agent infrastructure
+
+[AGENTS.md](../AGENTS.md) routes to [.agent/](../.agent/README.md) shared contracts,
+[skills/](../skills/) reasoning workflows and thin native provider adapters.
+[Toolkit validation](../.agent/hooks/README.md) checks structure and links without
+running recovery code or reading private inputs.

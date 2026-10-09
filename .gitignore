@@ -13,9 +13,16 @@ dist/
 # Local Obsidian vault settings
 .obsidian/
 
-# Local agent and Spec Kit workflow scaffolding
+# Local provider scaffolding and settings
 .agents/
 .specify/
+.codex/environments/
+.claude/settings.local.json
+
+# Canonical workflow and adapter names must not be hidden by build/ above
+!skills/build/
+!.codex/skills/build/
+!.claude/skills/build/
 
 # Local recovery workspaces, outputs, and ad hoc input samples
 /.uncorrupter-workspace/

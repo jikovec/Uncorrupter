@@ -4,7 +4,7 @@
   "repo_identity": "jikovec/Uncorrupter",
   "repo_purpose": "Offline-first bounded and evidence-preserving recovery of damaged text, archives, documents, PDF, images, audio, and video containers.",
   "application_version": "0.4.0",
-  "last_reviewed": "2026-09-09",
+  "last_reviewed": "2026-10-09",
   "evidence_state": {
     "implemented": true,
     "locally_tested": true,
@@ -142,8 +142,13 @@
     "current_handoff": "handoffs/2026-09-09-local-orientation.md",
     "historical_archives": "VERSIONS/",
     "local_obsidian_settings": ".obsidian/",
-    "local_agent_skills": ".agents/",
-    "local_spec_kit": ".specify/"
+    "local_spec_kit": ".specify/",
+    "agent_toolkit": ".agent/README.md",
+    "agent_project": ".agent/project.yaml",
+    "canonical_skills": "skills/",
+    "codex_adapters": ".codex/skills/",
+    "claude_adapters": ".claude/skills/",
+    "claude_instructions": "CLAUDE.md"
   },
   "source_areas": [
     {"path": "src/file_uncorrupter/cli.py", "role": "Commands, layout/config, lifecycle, resume, reports, exit policy."},
@@ -193,6 +198,8 @@
       "python -m build"
     ],
     "docs_validation": [
+      "python .agent/hooks/validate-toolkit/validate.py",
+      "python .agent/hooks/validate-toolkit/test_validate.py",
       "python -m json.tool ./docs/agent-index.json",
       "git diff --check"
     ],
@@ -215,7 +222,9 @@
     "Keep extension, byte-zero, anywhere-signature, and structural evidence distinct.",
     "Do not store raw source payloads in SQLite, JSONL, or reports.",
     "Preserve user-owned and unrelated dirty worktree changes.",
-    "Do not stage, commit, push, create a PR, dispatch workflows, publish, release, deploy, or change remote settings without action-specific authorization."
+    "Follow .agent/contracts/authorization.md for ordinary scoped source delivery through merge; release/deploy/publish and destructive actions retain separate authority boundaries.",
+    "Claude Code loads the release, deploy and publish adapters only on an explicit /release, /deploy or /publish (disable-model-invocation: true); keep canonical skills and Codex adapters name/description only.",
+    "Keep .agents/ and .specify/ local-only; shared native adapters live in .codex/skills/ and .claude/skills/."
   ],
   "sensitive_path_rules": [
     "Do not document or commit secrets, tokens, credentials, cookies, keys, .env contents, private URLs, or private user data.",
@@ -233,8 +242,8 @@
     "single-input/"
   ],
   "known_risks": [
-    "2026-09-09 host review: Python/python3 is absent from PATH; configured test actions cannot run until a supported project runtime is established.",
-    "The dirty/untracked local 0.4.0 candidate differs substantially from committed main; historical local test results are not current-host or exact-candidate CI proof.",
+    "2026-09-09 host review found Python absent from PATH on that host; a 2026-10-09 Linux host ran the deterministic suite with Python 3.12 in a disposable virtualenv.",
+    "The 0.4.0 candidate is delivered on a source branch; local results are not exact-commit CI proof until its remote run completes.",
     "Package author metadata says OpenAI; repository ownership is jikovec and authorship intent remains unresolved.",
     "GitHub Actions matrix is defined but exact-commit remote execution is unverified in the current report.",
     "Synthetic fixtures and the ground-truth mechanism do not establish a broad real-world recovery rate or support threshold without a labeled corpus.",
@@ -242,7 +251,9 @@
     "Media normalize, extract, and preview require both FFmpeg and ffprobe and remain narrow remux/stream/one-frame claims.",
     "Renderer-backed PDF/Office extraction, optional image codec coverage, and real qpdf/7z/RAR/LibreOffice tool-present matrices need deeper work.",
     "No bundled OS sandbox, adversarial fuzzing campaign, or independent security assessment exists.",
-    "No release, package publication, deployment, or live verification has been performed."
+    "No release, package publication, deployment, or live verification has been performed.",
+    "Mind-Seed registry and memory bindings are unverified; no enrollment or memory mutation is implied.",
+    "Native discovery is provider/version dependent; static link validation is not proof of a loaded session."
   ],
   "update_obligations": [
     "Update tests before or with behavioral changes.",
@@ -290,5 +301,5 @@
       "#repo/production-deploy",
       "#uncorrupter/released"
     ]
-  }, "agentWorkflow": {"guide": "docs/agent-workflow.md", "skill": "uncorrupter-workflow", "scope": "local project workflow; existing release authorization retained"}
+  }, "agentWorkflow": {"guide": "docs/agent-workflow.md", "toolkit": ".agent/README.md", "skill": "skills/project/uncorrupter-workflow/SKILL.md", "scope": "compatibility index; canonical workflows and authorization live in the repository toolkit"}
 }

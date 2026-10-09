@@ -45,8 +45,8 @@ The [2026-09-09 project card](PROJECT-OVERVIEW.md#current-project-card--2026-09-
 - Keep optional-tool-absent behavior functional and deterministic.
 - Preserve per-file persistence and resume history.
 - Do not store raw source bytes in SQLite/events/reports.
-- Keep `.obsidian/` local/ignored and `.agents/`/`.specify/` local-only.
-- Do not stage, commit, push, create PRs, dispatch workflows, release, deploy, or change remote settings without explicit authorization for that action.
+- Keep `.obsidian/`, `.agents/` and `.specify/` local-only; share native discovery pointers in `.codex/skills/` and `.claude/skills/`.
+- Follow [authorization](../.agent/contracts/authorization.md) for scoped source delivery and separate consequential effects.
 
 ## Dirty Worktree And Authored-Scope Boundary
 
@@ -131,6 +131,10 @@ Do not update `docs/OBSIDIAN.md` unless the task directly requires it and existi
 
 The repository root may be opened as a local-first plaintext vault. Normal Markdown links are canonical. `.obsidian/` remains ignored and must not be repurposed for cloud sync, accounts, or encryption setup. See [OBSIDIAN.md](OBSIDIAN.md).
 
-## AI task workflow
+## Reusable workflows
 
-See the [project AI workflow](agent-workflow.md) for completion rules, existing commands, local environment actions and delivery boundaries.
+Use [the toolkit index](../.agent/README.md) for skill selection, shared contracts,
+provider adapters and scoped source delivery. [Project metadata](../.agent/project.yaml)
+is stable identity; current state and handoffs carry dated evidence.
+
+There is no hosted application deployment workflow. GitHub source/work management is described in the [integration contract](../.agent/integrations/github.md).

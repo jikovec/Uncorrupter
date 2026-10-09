@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "project": {
+    "id": "github:jikovec/Uncorrupter",
+    "name": "File Uncorrupter",
+    "type": "application"
+  },
+  "repository": {
+    "host": "github",
+    "owner": "jikovec",
+    "name": "Uncorrupter",
+    "default_branch": "main",
+    "canonical_remote": "origin"
+  },
+  "organization": {
+    "id": null,
+    "name": null
+  },
+  "ownership": {
+    "class": "user-owned"
+  },
+  "agent": {
+    "instructions": "AGENTS.md",
+    "canonical_skills": "skills/",
+    "project_specific_skills": "skills/project/"
+  },
+  "environment": {
+    "primary_runtime": "Python >=3.11",
+    "package_manager": "pip / setuptools",
+    "required_tools": [
+      "git",
+      "python"
+    ],
+    "source_files": [
+      "pyproject.toml",
+      "docs/commands.md",
+      "docs/testing/VERIFICATION.md"
+    ]
+  },
+  "integrations": {
+    "directory": ".agent/integrations/"
+  },
+  "workflows": {
+    "directory": ".agent/workflows/"
+  },
+  "mind_seed": {
+    "enabled": false,
+    "binding": null
+  }
+}

@@ -96,7 +96,7 @@ python -m build
 - Recovery outputs/databases/reports can contain private data and are not public by default.
 - Input files are immutable; output paths are separate, contained, atomic, and no-clobber by default.
 - Optional tools do not grant permission, safety, or full-fidelity support.
-- No Git staging, commit, push, PR, workflow dispatch, publication, release, or deployment occurs without explicit action-specific authorization.
+- Source delivery follows [authorization](.agent/contracts/authorization.md); release, deployment and publication keep separate authority boundaries.
 
 ## Local-Only Notes
 
@@ -108,3 +108,10 @@ python -m build
 ## Maintenance
 
 When paths, commands, capabilities, safety rules, or known risks change, update the executable tests, generated capability baseline, relevant narrative docs, `docs/agent-index.json`, and a dated report/handoff. Preserve existing user-owned and unrelated dirty worktree changes.
+
+## Repository agent toolkit
+
+- [Toolkit and canonical workflows](.agent/README.md)
+- [Portable project identity](.agent/project.yaml)
+- [Workflow compatibility index](docs/agent-workflow.md)
+- [Bootstrap handoff](handoffs/2026-10-07-agent-toolkit.md)

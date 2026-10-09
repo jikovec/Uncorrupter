@@ -91,3 +91,12 @@ Cancellation, fatal configuration, and changed-source handling have explicit bra
 - Schema/evidence change: update migrations/tests, architecture, source map, and handoff.
 - New format: update constants, detection/classification, handler registry, fixtures/mutations, integration tests, capability docs, security boundaries, and roadmap.
 - Verification change: update the dated report; do not convert local evidence into CI/live/deployment claims.
+
+## Agent toolkit connections
+
+[Project identity](../.agent/project.yaml) → [root instructions](../AGENTS.md) →
+[canonical workflows](../skills/) → [shared project processes](../.agent/workflows/README.md).
+Native adapters point to canonical skills; [routing cases](../.agent/evals/skill-routing.md)
+and [structural validation](../.agent/hooks/README.md) check different properties.
+Policy adoption is recorded in [decisions](decisions.md); observed delivery evidence
+belongs in the [bootstrap handoff](../handoffs/2026-10-07-agent-toolkit.md).

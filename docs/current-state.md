@@ -172,4 +172,28 @@ Plausible next families include GZIP/BZIP2/XZ, CPIO/CAB/ISO, JAR/APK/EPUB/CBZ, E
 
 ## Local AI workflow setup — 2026-09-05
 
-The [project AI workflow](agent-workflow.md) now defines completion behaviour, project-specific command routing and authorization reuse. Local skill and environment files were prepared alongside it. This is a local configuration/source change; no commit, push, merge, deployment, service activation or live acceptance is asserted. Existing release gates remain in force.
+A local project AI workflow defined completion behaviour, command routing and authorization reuse. It is superseded by the 2026-10-07 toolkit adoption below; `docs/agent-workflow.md` is now a compatibility index.
+
+## Agent toolkit — 2026-10-07
+
+The [portable toolkit](../.agent/README.md) establishes shared contracts, stable
+repository-qualified identity, canonical skills and thin provider adapters.
+The [adoption decision](decisions.md) covers ordinary scoped source workflow through
+merge while preserving separate release/deployment gates and external protections.
+This changes development guidance only. See the [handoff](../handoffs/2026-10-07-agent-toolkit.md)
+for checks, isolated delivery and unavailable registry/provider evidence.
+Since 2026-10-09 the Claude adapters for `release`, `deploy` and `publish` set
+`disable-model-invocation: true`, so Claude loads them only on an explicit request.
+
+## Source delivery of the 0.4.0 candidate — 2026-10-09
+
+The previously uncommitted 0.4.0 candidate was committed on branch
+`claude/v0.4.0-multiformat-recovery-20261009` and merged with `origin/main`
+(toolkit PRs #12/#13). Conflicts kept the 0.4.0 product documentation and the
+toolkit contract; `AGENTS.md` follows the toolkit and retains the GitHub Pro
+memory block. Five files whose only local change was CRLF line endings
+(`LICENSE`, `VERSIONS/`, legacy sources, one report), `specs/` and
+`.codex/environments/` were left uncommitted. On a Linux host with Python 3.12 the
+deterministic suite reported 154 passed and 1 skipped, and toolkit validation passed on
+the committed tree. Remote CI evidence belongs to the pull request; this is not a release
+or deployment.

@@ -43,3 +43,5 @@ A useful handoff includes:
 - Never convert local/synthetic evidence into CI/live/deployment proof.
 - Never claim history that cannot be recovered from source/Git evidence.
 - Link the active handoff from the root and documentation indexes.
+
+- [2026-10-07 repository agent toolkit](2026-10-07-agent-toolkit.md)

@@ -1,12 +1,17 @@
 # Native discovery and migration
 
 Canonical skill policy is under `skills/`; adapters contain matching `name` and
-`description` plus a repository-relative link. No adapter carries separate rules.
+`description` plus a repository-relative link. No adapter carries separate rules;
+the one exception is the Claude invocation gate below.
 
 - Codex 0.159.2: native `skills/list` with forced reload confirms `.codex/skills/`
   works. This runtime also scans `.agents/skills/`; maintaining both adapter sets
   yields duplicates. Share only `.codex/skills/<name>/SKILL.md` in this repository.
 - Claude Code: `.claude/skills/<name>/SKILL.md`; root `CLAUDE.md` imports `@AGENTS.md`.
+  The Claude `release`, `deploy` and `publish` adapters also set
+  `disable-model-invocation: true`, so Claude Code loads them only on an explicit
+  `/release`, `/deploy` or `/publish`. Canonical skills and Codex adapters keep the
+  portable name/description metadata, and the validator enforces both forms.
 - Every canonical project skill has the same adapters as the baseline workflows.
 - Invoke `$build` in Codex or `/build` in Claude, or explicitly request the canonical
   skill by path when a session's cached discovery is stale. Restart/reopen a session

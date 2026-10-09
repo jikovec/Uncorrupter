@@ -17,16 +17,29 @@ CONTRACTS = {
     'deployment', 'handoff', 'memory', 'scopes',
 }
 PROVIDERS = ('.codex', '.claude')
+# Claude Code loads these adapters only on an explicit /name invocation.
+CLAUDE_USER_ONLY = {'release', 'deploy', 'publish'}
+CLAUDE_GATE = 'disable-model-invocation: true'
 
 
-def frontmatter(path: Path) -> dict[str, str]:
-    """Parse this toolkit's portable two-field YAML/JSON-string subset."""
+def frontmatter(path: Path, claude_gate: bool = False) -> dict[str, str]:
+    """Parse this toolkit's portable two-field YAML/JSON-string subset.
+
+    The Claude release, deploy and publish adapters add one fixed gate line.
+    """
     text = path.read_text(encoding='utf-8')
     match = re.match(r'\A---\n(.*?)\n---\n', text, re.S)
     if not match:
         raise ValueError('missing or malformed frontmatter')
+    lines = match[1].splitlines()
+    if claude_gate:
+        if lines.count(CLAUDE_GATE) != 1:
+            raise ValueError(f'Claude adapter requires {CLAUDE_GATE!r} for explicit-only invocation')
+        lines = [line for line in lines if line != CLAUDE_GATE]
+    elif any(line.startswith('disable-model-invocation:') for line in lines):
+        raise ValueError('disable-model-invocation is reserved for the Claude release, deploy and publish adapters')
     fields: dict[str, str] = {}
-    for line in match[1].splitlines():
+    for line in lines:
         key, sep, value = line.partition(':')
         if not sep or key not in {'name', 'description'} or key in fields:
             raise ValueError('expected unique name and description fields')
@@ -126,7 +139,8 @@ def validate(root: Path) -> list[str]:
         for name, (source, fields) in canonical.items():
             adapter = root / provider / 'skills' / name / 'SKILL.md'
             try:
-                check(frontmatter(adapter) == fields, f'{provider}/{name}: metadata drift')
+                gated = provider == '.claude' and name in CLAUDE_USER_ONLY
+                check(frontmatter(adapter, gated) == fields, f'{provider}/{name}: metadata drift')
                 target = source.relative_to(root).as_posix()
                 body = adapter.read_text().split('---\n', 2)[-1].strip()
                 expected = (f'Read and follow the canonical [{name} workflow](../../../{target}) before acting.\n'

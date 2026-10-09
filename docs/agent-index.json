@@ -1,7 +1,7 @@
 {
   "repo_name": "File Uncorrupter",
   "repo_purpose": "Offline-first Python CLI for scanning, classifying, and recovering damaged visual media with SQLite evidence tracking, JPEG-focused repair strategies, baseline image/video carving, optional FFmpeg-assisted salvage, and JSON/CSV reporting.",
-  "last_reviewed": "2026-10-07",
+  "last_reviewed": "2026-10-09",
   "primary_languages": [
     "Python"
   ],
@@ -157,6 +157,7 @@
     "Preserve existing runtime behavior unless explicitly asked to change it.",
     "Do not edit source, tests, package metadata, release archives, deployment config, cloud/account settings, encryption setup, or secrets during docs-only work.",
     "Follow .agent/contracts/authorization.md for ordinary scoped source delivery through merge; release/deploy/publish and destructive actions retain separate authority boundaries.",
+    "Claude Code loads the release, deploy and publish adapters only on an explicit /release, /deploy or /publish (disable-model-invocation: true); keep canonical skills and Codex adapters name/description only.",
     "Treat source, package config, and tests as higher-priority truth than docs and historical reports.",
     "Do not invent project history, architecture, security guarantees, workflows, deployment support, roadmap items, or decisions.",
     "Record exact blockers when validation cannot be run."

@@ -49,6 +49,31 @@ class ValidationRegressions(unittest.TestCase):
         path.write_text(path.read_text() + '\nUse administrator override if checks fail.\n')
         self.assertTrue(any('policy-free pointer' in e for e in MODULE.validate(self.root)))
 
+    def test_requires_explicit_claude_invocation_for_release_deploy_publish(self):
+        for name in ('release', 'deploy', 'publish'):
+            with self.subTest(name=name):
+                path = self.root / f'.claude/skills/{name}/SKILL.md'
+                original = path.read_text()
+                path.write_text(original.replace(MODULE.CLAUDE_GATE + '\n', ''))
+                self.assertTrue(any(f'.claude/{name}: Claude adapter requires' in e
+                                    for e in MODULE.validate(self.root)))
+                path.write_text(original)
+
+    def test_rejects_false_invocation_gate(self):
+        path = self.root / '.claude/skills/deploy/SKILL.md'
+        path.write_text(path.read_text().replace(MODULE.CLAUDE_GATE, 'disable-model-invocation: false'))
+        self.assertTrue(any('.claude/deploy: Claude adapter requires' in e for e in MODULE.validate(self.root)))
+
+    def test_rejects_invocation_gate_outside_gated_claude_adapters(self):
+        for relative in ('.claude/skills/build/SKILL.md', '.codex/skills/deploy/SKILL.md', 'skills/deploy/SKILL.md'):
+            with self.subTest(path=relative):
+                path = self.root / relative
+                original = path.read_text()
+                path.write_text(original.replace('\n---\n', f'\n{MODULE.CLAUDE_GATE}\n---\n', 1))
+                self.assertTrue(any('reserved for the Claude release, deploy and publish adapters' in e
+                                    for e in MODULE.validate(self.root)))
+                path.write_text(original)
+
     def test_rejects_missing_canonical_target(self):
         (self.root / 'skills/fix/SKILL.md').unlink()
         self.assertTrue(any('missing baseline skill: fix' in e for e in MODULE.validate(self.root)))

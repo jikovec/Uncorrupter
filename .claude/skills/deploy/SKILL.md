@@ -1,6 +1,7 @@
 ---
 name: "deploy"
 description: "Deploy the intended repository state through its normal governed deployment process and verify the resulting live state."
+disable-model-invocation: true
 ---
 
 Read and follow the canonical [deploy workflow](../../../skills/deploy/SKILL.md) before acting.

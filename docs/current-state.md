@@ -89,3 +89,5 @@ The [adoption decision](decisions.md) covers ordinary scoped source workflow thr
 merge while preserving separate release/deployment gates and external protections.
 This changes development guidance only. See the [handoff](../handoffs/2026-10-07-agent-toolkit.md)
 for checks, isolated delivery and unavailable registry/provider evidence.
+Since 2026-10-09 the Claude adapters for `release`, `deploy` and `publish` set
+`disable-model-invocation: true`, so Claude loads them only on an explicit request.

@@ -1,12 +1,18 @@
 # Handoffs Index
 
-Tags: #agent/handoff #repo/index
-
-This directory is for future handoff notes when work is incomplete, blocked, deferred, or needs a later agent to continue with specific context. It is intentionally lightweight.
+Handoffs preserve an actionable continuation boundary for future agents. Current source/tests remain authoritative.
 
 ## Current Handoffs
 
-- No handoff notes are present yet.
+- [2026-09-09 - Local project orientation](2026-09-09-local-orientation.md): current project card, existing workflow reuse, host prerequisites, source/remote separation and scoped validation.
+- [2026-08-05- [2026-08-05 - Stabilized multi-format recovery](2026-08-05-stabilized-multiformat-recovery.md): current 0.4.0 architecture, verification, remaining gates, and preserved local state through 2026-08-08.
+- [2026-07-26 - Video/JPEG misclassification fix](2026-07-26-video-jpeg-misclassification-fix.md): concurrent declared-video/embedded-JPEG routing correction retained by stabilization.
+
+## Related Reports
+
+- [Stabilized multi-format implementation report](../reports/2026-08-05-stabilized-multiformat-implementation.md)
+- [Pre-stabilization assessment](../reports/2026-07-26-current-state-and-roadmap-assessment.md)
+- [Reports index](../reports/INDEX.md)
 
 ## Naming Convention
 
@@ -16,34 +22,24 @@ Use:
 YYYY-MM-DD-short-topic.md
 ```
 
-Examples:
+Do not rename an existing handoff merely to change its completion date; record the continuation date inside it.
 
-- `2026-07-09-docs-index-follow-up.md`
-- `2026-07-09-ffmpeg-validation-blocked.md`
+## Handoff Content
 
-## Handoff Template
+A useful handoff includes:
 
-```markdown
-# Handoff - YYYY-MM-DD - Topic
-
-## Scope
-
-## Current State
-
-## Files Inspected Or Changed
-
-## Commands Run
-
-## Blockers
-
-## Next Steps
-
-## Risks And Non-Goals
-```
+- task scope and authorization boundary;
+- confirmed current state and evidence level;
+- files/areas changed;
+- exact commands and results;
+- dirty/unrelated/user-owned state preserved;
+- unresolved failures, skips, external dependencies, and risks;
+- the safest next checks/actions;
+- explicit non-goals such as no commit/push/release/deployment.
 
 ## Rules
 
-- Keep handoffs source-backed and concise.
-- Link relevant docs, source, tests, and reports.
-- Do not store secrets, private paths, private media details, account IDs, tokens, credentials, or private URLs.
-- Do not use a handoff to invent product commitments, roadmap items, unsupported security guarantees, or deployment status.
+- Never include secrets or private source content.
+- Never convert local/synthetic evidence into CI/live/deployment proof.
+- Never claim history that cannot be recovered from source/Git evidence.
+- Link the active handoff from the root and documentation indexes.

@@ -1,62 +1,59 @@
 # Documentation Index
 
-This index is the entry point for current documentation. The repository code, tests, and package metadata are the source of truth when a historical report disagrees with the current implementation.
+The documentation describes the current `0.4.0` source candidate. Source, package metadata, tests, and executable capabilities override stale narrative or historical archives.
 
 ## Start Here
 
-- [Project overview](PROJECT-OVERVIEW.md) - what the package does now and where the important files live.
-- [Agent orientation](AGENT-INDEX.md) - start-here workflow, safety rules, update obligations, and machine-readable index route.
-- [Source map](SOURCE-MAP.md) - current source and test areas by subsystem.
-- [Connection map](CONNECTIONS.md) - docs, source, tests, reports, and handoff connections.
-- [Obsidian local vault guide](OBSIDIAN.md) - local-first vault conventions, graph hubs, and tag taxonomy.
-- [Developer setup](setup/DEVELOPMENT.md) - install, optional FFmpeg setup, and local development commands.
-- [Architecture](architecture/ARCHITECTURE.md) - current module boundaries and data flow.
-- [CLI reference](api/CLI.md) - commands, options, outputs, and the note that there is no HTTP route layer.
-
-## Operational Docs
-
+- [Current state](current-state.md)
+- [Executable capability baseline](capabilities.generated.md)
+- [Capabilities, format depth, and roadmap](CAPABILITIES-AND-ROADMAP.md)
+- [Benchmark ground-truth schema and metrics](BENCHMARK-GROUND-TRUTH.md)
+- [Project overview](PROJECT-OVERVIEW.md)
+- [CLI reference](api/CLI.md)
 - [Security and local data handling](security/SECURITY.md)
 - [Testing and verification](testing/VERIFICATION.md)
-- [Changelog and release notes](releases/CHANGELOG.md)
+
+## Maintainer Orientation
+
+- [Agent index](AGENT-INDEX.md)
 - [Machine-readable agent index](agent-index.json)
+- [Architecture](architecture/ARCHITECTURE.md)
+- [Source map](SOURCE-MAP.md)
+- [Connection map](CONNECTIONS.md)
+- [Decisions](decisions.md)
+- [Developer setup](setup/DEVELOPMENT.md)
+- [Commands](commands.md)
+- [Changelog and candidate release notes](releases/CHANGELOG.md)
 
-## Reports And Archive
+## Current Reports And Handoffs
 
+- [Stabilized multi-format implementation](../reports/2026-08-05-stabilized-multiformat-implementation.md)
+- [Stabilized multi-format handoff](../handoffs/2026-08-05-stabilized-multiformat-recovery.md)
+- [Pre-stabilization assessment](../reports/2026-07-26-current-state-and-roadmap-assessment.md)
+- [Video/JPEG classification handoff](../handoffs/2026-07-26-video-jpeg-misclassification-fix.md)
 - [Root reports index](../reports/INDEX.md)
-- [Root handoffs index](../handoffs/INDEX.md)
-- [Reports index](reports/INDEX.md)
-- [Historical research blueprint](reports/archive/001-deep-research-report.md)
-- [Documentation reorganization report](reports/DOCUMENTATION-REORGANIZATION-2026-07-07.md)
+- [Handoffs index](../handoffs/INDEX.md)
+- [Curated/historical reports index](reports/INDEX.md)
 
-## Current Documentation Inventory
+## Local Obsidian
 
-Current, developer-facing docs:
+- [Obsidian local-vault guide](OBSIDIAN.md)
+- Repository root hub: [00_Index.md](../00_Index.md)
 
-- [README.md](../README.md)
-- [docs/INDEX.md](INDEX.md)
-- [docs/AGENT-INDEX.md](AGENT-INDEX.md)
-- [docs/OBSIDIAN.md](OBSIDIAN.md)
-- [docs/SOURCE-MAP.md](SOURCE-MAP.md)
-- [docs/CONNECTIONS.md](CONNECTIONS.md)
-- [docs/agent-index.json](agent-index.json)
-- [docs/PROJECT-OVERVIEW.md](PROJECT-OVERVIEW.md)
-- [docs/setup/DEVELOPMENT.md](setup/DEVELOPMENT.md)
-- [docs/architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md)
-- [docs/api/CLI.md](api/CLI.md)
-- [docs/security/SECURITY.md](security/SECURITY.md)
-- [docs/testing/VERIFICATION.md](testing/VERIFICATION.md)
-- [docs/releases/CHANGELOG.md](releases/CHANGELOG.md)
-- [docs/reports/INDEX.md](reports/INDEX.md)
-- [reports/INDEX.md](../reports/INDEX.md)
-- [handoffs/INDEX.md](../handoffs/INDEX.md)
+`.obsidian/` is ignored local state. Documentation is canonical as normal Markdown and must not depend on cloud sync, accounts, or editor-specific metadata.
 
-Historical or evidence docs:
+## Historical And Secondary Docs
 
-- [docs/reports/archive/001-deep-research-report.md](reports/archive/001-deep-research-report.md)
-- [VERSIONS/](../VERSIONS/) contains historical archives and legacy release artifacts.
+- `docs/reports/archive/` contains historical research.
+- `VERSIONS/`, root `CHANGELOG/`, `DOCUMENTATION/`, and `results/` are retained historical/project artifacts.
+- Historical files can explain earlier design stages but do not override current behavior.
 
-Empty or non-canonical documentation locations found during inventory:
+## Documentation Maintenance Rules
 
-- `CHANGELOG/` existed as a top-level directory but contained no tracked files during this cleanup.
-- `results/` existed as a top-level directory but contained no tracked files during this cleanup.
-- `DOCUMENTATION/` previously contained the deep research report; that report now lives in the report archive.
+- Capability claims must match registered handlers and `docs/capabilities.generated.md`.
+- Local tests must be labeled local/synthetic; workflow definitions are not remote CI proof.
+- No deployment/release claim without action and confirmation.
+- Keep commands executable and paths relative.
+- Update `agent-index.json` with path, command, tag, safety, capability, and risk changes.
+- Add a dated report and handoff after substantive implementation.
+- Preserve user-authored `OBSIDIAN.md` changes unless the task specifically covers them.

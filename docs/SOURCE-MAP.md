@@ -1,133 +1,115 @@
 # Source Map
 
-Tags: #repo/source-map #repo/architecture #uncorrupter/recovery
+This map orients maintainers from public behavior to its owning code and evidence. Current source, `pyproject.toml`, and executable tests override historical reports.
 
-This map connects the current source tree to the product behavior, tests, and docs that describe it. Source, package config, and tests remain the highest-priority truth when this map drifts.
+## Public And Package Surfaces
 
-## Public Interface
+| Path | Role | Primary checks |
+| --- | --- | --- |
+| `pyproject.toml` | Build metadata, Python floor, runtime/dev dependencies, console script, pytest config. | `tests/test_packaging.py` |
+| `src/file_uncorrupter/__init__.py` | Authoritative `__version__`. | `tests/test_packaging.py`, CLI version tests |
+| `src/file_uncorrupter/cli.py` | Parser, commands, lifecycle, resume, reports, exit policy. | `tests/test_cli.py`, `tests/test_run_lifecycle.py` |
+| `src/file_uncorrupter/capabilities.py` | Handler-derived JSON/text/Markdown manifests and quality gate. | `tests/test_capabilities.py` |
 
-- [src/file_uncorrupter/cli.py](../src/file_uncorrupter/cli.py) defines the `file-uncorrupter` CLI parser and dispatch.
-- [pyproject.toml](../pyproject.toml) declares the package name, package version, Python requirement, runtime dependency on Pillow, pytest configuration, and console script.
-- [docs/api/CLI.md](api/CLI.md) documents the CLI surface.
+## Stabilization Core
 
-Commands:
+| Path | Role | Primary checks |
+| --- | --- | --- |
+| `budgets.py` | Resource defaults, hierarchical fail-before-consume counters/events. | `test_budgets_and_byte_source.py`, `test_safe_recovery.py` |
+| `byte_source.py` | Immutable identity, streaming/random reads, read-only seekable parser adapter, slices, hash, change detection. | `test_budgets_and_byte_source.py`, `test_run_lifecycle.py`, `test_streaming_handlers.py` |
+| `paths.py` | Layout overlap and contained relative-path validation. | `test_atomic_and_paths.py`, `test_cli.py` |
+| `atomic.py` | Temporary-sibling durable publication and collision policy. | `test_atomic_and_paths.py`, `test_safe_recovery.py` |
+| `cancellation.py` | Cancellation token and marker-file integration. | `test_process_runner.py`, `test_run_lifecycle.py` |
+| `events.py` | Durable deterministic JSONL and path pseudonymization. | `test_cli.py`, `test_run_lifecycle.py` |
+| `process_runner.py` | Minimal-env bounded subprocess/tool/isolation boundary. | `test_process_runner.py`, `test_external_adapters.py`, `test_pdf_handler.py` |
+| `types.py` | File, signature, classification, plan, candidate, decode, artifact, outcome types. | Cross-suite |
 
-- `scan`
-- `classify`
-- `recover`
-- `benchmark`
-- `report`
+## Intake, Detection, And Routing
 
-## Recovery Pipeline
+| Path | Role | Primary checks |
+| --- | --- | --- |
+| `constants.py` | Extensions, families, signatures, format mappings. | `test_classification.py`, `test_capabilities.py` |
+| `intake.py` | Stable discovery, reparse pruning, source record construction. | `test_safe_recovery.py`, `test_cli.py` |
+| `signature_index.py` | Bounded byte-0/anywhere signature hits. | `test_signature_index.py`, `test_classification.py` |
+| `classification.py` | Evidence separation and family/label/confidence. | `test_classification.py`, `test_capabilities.py` |
+| `handlers/base.py` | Handler/capability/context/goal/plan contract. | `test_handler_registry.py` |
+| `handlers/registry.py` | Deterministic ownership and handler lookup. | `test_handler_registry.py`, `test_capabilities.py` |
+| `pipeline.py` | Analyze/process coordinators, budgets, goals, workers, persistence bridge. | `test_safe_recovery.py`, `test_run_lifecycle.py`, `test_multiformat_integration.py` |
 
-- [src/file_uncorrupter/pipeline.py](../src/file_uncorrupter/pipeline.py) orchestrates scan, classification, candidate generation, decoder probing, scoring, output writing, and persistence.
-- [src/file_uncorrupter/types.py](../src/file_uncorrupter/types.py) defines shared dataclasses for signatures, file records, classifications, candidates, artifacts, decode results, and recovery outcomes.
-- [docs/architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md) explains the high-level data flow.
+## Format Handlers
 
-Primary test coverage:
+| Path | Formats | Primary checks |
+| --- | --- | --- |
+| `handlers/text.py` | TXT, Markdown, log, CSV, JSON, XML, HTML. | `test_text_handler.py` |
+| `handlers/archive.py` | Streaming ZIP/TAR validation/extraction and bounded reconstruction. | `test_archive_handler.py`, `test_streaming_handlers.py` |
+| `handlers/package_document.py` | Streaming DOCX/DOCM, XLSX/XLSM, PPTX/PPTM, ODT/ODS/ODP inspection/extraction and bounded rebuild. | `test_package_documents.py`, `test_streaming_handlers.py` |
+| `handlers/pdf.py` | Incremental PDF analysis/extraction, bounded native repair, exact-output qpdf repair/validation. | `test_pdf_handler.py`, `test_streaming_handlers.py` |
+| `handlers/image.py` | PNG, GIF, BMP, WebP, seekable TIFF, HEIF/AVIF/JP2/RAW boundaries. | `test_image_handlers.py`, `test_streaming_handlers.py` |
+| `handlers/legacy_media.py` | JPEG public handler bridge. | `test_recovery.py`, `test_image_handlers.py`, `test_multiformat_integration.py` |
+| `handlers/media.py` | Streaming video/audio diagnostics/native repair plus conditional FFmpeg normalize/extract/preview. | `test_media_handlers.py`, `test_multiformat_integration.py`, `test_streaming_handlers.py` |
+| `handlers/external.py` | 7z/RAR, RTF, and conditional LibreOffice/soffice legacy DOC/XLS/PPT preview. | `test_external_adapters.py` |
 
-- [tests/test_recovery.py](../tests/test_recovery.py)
-- [tests/test_classification.py](../tests/test_classification.py)
-- [tests/test_db.py](../tests/test_db.py)
+## Candidate Engines And Decoders
 
-## Intake And Signature Detection
+| Path | Role | Boundary |
+| --- | --- | --- |
+| `engines/base.py` | Compatibility engine interface. | Not the public handler contract. |
+| `engines/jpeg_v1.py` | JPEG structural candidate strategies. | Bounded/capped by the JPEG handler. |
+| `engines/media_v2.py` | Baseline candidate generation and content/strategy deduplication. | Compatibility and reusable candidate logic. |
+| `engines/registry.py` | Legacy engine selection. | Kept for compatibility. |
+| `decoders.py` | Seekable Pillow/file-output validation plus FFmpeg/ffprobe normalize/extract/preview primitives. | Public operations require handler plans and exact published-output validation. |
+| `scoring.py` | Candidate scoring. | Selection evidence, not proof of full fidelity. |
 
-- [src/file_uncorrupter/intake.py](../src/file_uncorrupter/intake.py) iterates input files, reads bytes, hashes data, determines declared kind from extension, and builds file records.
-- [src/file_uncorrupter/signature_index.py](../src/file_uncorrupter/signature_index.py) detects byte-0 and anywhere-in-blob signatures.
-- [src/file_uncorrupter/constants.py](../src/file_uncorrupter/constants.py) defines file signatures, supported image/video kinds, extension mapping, Pillow output formats, video output extensions, and ISOBMFF brand mapping.
+## Persistence, Workspace, And Reporting
 
-Primary test coverage:
+| Path | Role | Primary checks |
+| --- | --- | --- |
+| `db.py` | Schema v2, migrations, lifecycle, typed relations, summaries/resume queries. | `test_db.py`, `test_db_migrations.py`, `test_run_lifecycle.py` |
+| `workspace.py` | Local workspace layout and atomic config/blob helpers. | `test_atomic_and_paths.py`, CLI integration |
+| `reporting.py` | JSON manifest, CSV, text, benchmark, redaction. | `test_cli.py`, `test_run_lifecycle.py` |
+| `benchmarking.py` | Ground-truth validation/evaluation and main-process RSS sampling. | `test_benchmarking.py`, `test_cli.py` |
 
-- [tests/test_signature_index.py](../tests/test_signature_index.py)
-- [tests/test_classification.py](../tests/test_classification.py)
+## Fixture And Quality Infrastructure
 
-## Classification
+| Path | Role |
+| --- | --- |
+| `tests/fixtures.py` | License-safe deterministic builders and public-family evidence inventory. |
+| `tests/mutations.py` | Core and format-specific mutation case construction. |
+| `tests/test_mutation_inventory.py` | Ensures every public family and required mutation class stays represented. |
+| `tests/test_capabilities.py` | Manifest completeness, unique ownership, fixture evidence, generated-doc drift. |
+| `tests/test_packaging.py` | Version/dependency/workflow/build surface checks. |
+| `tests/test_streaming_handlers.py` | Zero-materialization public-handler paths and large stored-ZIP memory regression. |
+| `tests/test_determinism.py` | Stable fixture/candidate behavior independent of hash seed and run. |
+| `.github/workflows/ci.yml` | Defined Windows/Linux/Python/tool matrix; not itself proof of remote execution. |
 
-- [src/file_uncorrupter/classification.py](../src/file_uncorrupter/classification.py) assigns family, label, confidence, and evidence.
-- JPEG has the deepest classification labels, including missing SOI, missing EOI, missing DHT, structural salvage candidates, weak internal signal, and low signal.
-- Other supported families receive baseline container or detected-candidate labels.
+## Documentation And Evidence
 
-Primary test coverage:
+| Path | Role |
+| --- | --- |
+| `README.md` | User entry point and safe workflow. |
+| `docs/current-state.md` | Confirmed implementation and open gates. |
+| `docs/capabilities.generated.md` | Executable tool-disabled capability baseline. |
+| `docs/CAPABILITIES-AND-ROADMAP.md` | Format detail and future possibilities. |
+| `docs/BENCHMARK-GROUND-TRUTH.md` | Versioned benchmark label schema and metric semantics. |
+| `docs/architecture/ARCHITECTURE.md` | Component contracts and data flow. |
+| `docs/security/SECURITY.md` | Threat model and non-guarantees. |
+| `docs/testing/VERIFICATION.md` | Reproduction and evidence labels. |
+| `reports/2026-08-05-stabilized-multiformat-implementation.md` | Dated implementation/test evidence. |
+| `handoffs/2026-08-05-stabilized-multiformat-recovery.md` | Future-agent continuation boundary. |
 
-- [tests/test_classification.py](../tests/test_classification.py)
-- [tests/test_recovery.py](../tests/test_recovery.py)
+## Historical Boundaries
 
-## Engines
+- `VERSIONS/`, `CHANGELOG/`, `DOCUMENTATION/`, `results/`, and archived reports may explain earlier prototypes but do not override current source.
+- `.uncorrupter-workspace/`, `output/`, and `single-input/` are local run/input artifacts, not product source.
+- `.agents/` and `.specify/` are local workflow scaffolding.
+- `.obsidian/` is local ignored editor state.
 
-- [src/file_uncorrupter/engines/base.py](../src/file_uncorrupter/engines/base.py) defines the recovery engine interface.
-- [src/file_uncorrupter/engines/registry.py](../src/file_uncorrupter/engines/registry.py) registers available engines.
-- [src/file_uncorrupter/engines/jpeg_v1.py](../src/file_uncorrupter/engines/jpeg_v1.py) implements JPEG-focused candidate generation.
-- [src/file_uncorrupter/engines/media_v2.py](../src/file_uncorrupter/engines/media_v2.py) implements baseline image/video candidate generation and delegates JPEG to `jpeg-v1`.
+## Change Checklist
 
-Registered engines:
+When a path, command, capability, safety rule, or known risk changes, update:
 
-- `jpeg-v1`
-- `baseline-v2`
-
-Primary test coverage:
-
-- [tests/test_recovery.py](../tests/test_recovery.py)
-
-## Decoder Adapters
-
-- [src/file_uncorrupter/decoders.py](../src/file_uncorrupter/decoders.py) adapts Pillow, FFmpeg, and ffprobe for candidate probing and output writing.
-- Pillow is used for supported still-image probing and saving.
-- FFmpeg/ffprobe are optional and discovered from `PATH`.
-- Video/container recovery can produce remuxed output, preview frames, and frame-set artifacts when local FFmpeg tooling can decode the candidate.
-
-Related docs:
-
-- [Security and local data handling](security/SECURITY.md)
-- [Testing and verification](testing/VERIFICATION.md)
-
-## Scoring
-
-- [src/file_uncorrupter/scoring.py](../src/file_uncorrupter/scoring.py) scores successful decoder results.
-- Score inputs include candidate priority, decoded dimensions, decoder entropy or video metadata, family match, candidate kind, and classification-specific boosts.
-
-Primary test coverage:
-
-- [tests/test_recovery.py](../tests/test_recovery.py)
-
-## Persistence And Reporting
-
-- [src/file_uncorrupter/db.py](../src/file_uncorrupter/db.py) creates and migrates SQLite schema, starts runs, persists records, and fetches summaries.
-- [src/file_uncorrupter/reporting.py](../src/file_uncorrupter/reporting.py) writes JSON summary reports and attempts CSV files.
-
-Main database tables:
-
-- `runs`
-- `files`
-- `signatures`
-- `candidates`
-- `attempts`
-- `outputs`
-- `frames`
-
-Primary test coverage:
-
-- [tests/test_db.py](../tests/test_db.py)
-
-## Workspace
-
-- [src/file_uncorrupter/workspace.py](../src/file_uncorrupter/workspace.py) defines local workspace roots and config snapshots.
-- Recovery and benchmark runs default workspace state under the output root. Scan and classify default workspace state near the database path unless `--workspace-root` is provided.
-
-Related docs:
-
-- [Developer setup](setup/DEVELOPMENT.md)
-- [CLI reference](api/CLI.md)
-
-## Historical And Legacy Material
-
-- [src/file_uncorrupter/legacy/a_2026_04_01.py](../src/file_uncorrupter/legacy/a_2026_04_01.py) preserves legacy implementation material.
-- [tests/a.py](../tests/a.py) is a retained legacy script file.
-- [docs/reports/archive/001-deep-research-report.md](reports/archive/001-deep-research-report.md) is historical research evidence.
-- [VERSIONS/](../VERSIONS/) contains historical release artifacts and must not be treated as current implementation truth.
-
-## Test Map
-
-- [tests/test_classification.py](../tests/test_classification.py) covers JPEG classification labels.
-- [tests/test_signature_index.py](../tests/test_signature_index.py) covers anywhere signature detection for prefixed MP4 data.
-- [tests/test_db.py](../tests/test_db.py) covers run summary counts, duplicate candidate persistence, and successful output summaries.
-- [tests/test_recovery.py](../tests/test_recovery.py) covers JPEG recovery strategies, candidate generation, standard color tables, and FFmpeg-gated prefixed MP4 recovery.
+1. the owning executable tests;
+2. `docs/capabilities.generated.md` if capability output changes;
+3. the relevant source/architecture/current-state docs;
+4. `docs/agent-index.json`;
+5. a dated report or handoff for substantive changes.

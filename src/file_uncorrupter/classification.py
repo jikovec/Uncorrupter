@@ -20,6 +20,11 @@ from .constants import (
     TIFF_BE,
     TIFF_LE,
     WEBP,
+    AUDIO_KINDS,
+    ARCHIVE_KINDS,
+    DOCUMENT_KINDS,
+    PACKAGE_KINDS,
+    TEXT_KINDS,
 )
 from .signature_index import find_all
 from .types import Classification, FileRecord
@@ -95,6 +100,13 @@ def _generic_evidence(record: FileRecord, jpeg_stats: dict[str, int], auxiliary:
             for hit in record.signature_hits[:32]
         ],
         "jpeg": jpeg_stats,
+        "extension_evidence": {"declared_kind": record.declared_kind, "suffix": record.path.suffix.lower()},
+        "signature_evidence": {
+            "byte0_kind": record.byte0_kind,
+            "anywhere_kind": record.anywhere_kind,
+            "hits": len(record.signature_hits),
+        },
+        "structure_evidence": {"jpeg": jpeg_stats, **auxiliary},
         **auxiliary,
     }
 
@@ -105,6 +117,7 @@ def classify_record(record: FileRecord, data: bytes) -> Classification:
     evidence = _generic_evidence(record, jpeg_stats, auxiliary)
 
     declared_jpeg = record.declared_kind == "jpeg"
+    declared_video = record.declared_kind in VIDEO_FAMILIES
     byte0_jpeg = record.byte0_kind == "jpeg"
     strong_anywhere_jpeg = any(hit.family == "jpeg" for hit in record.signature_hits)
     internal_jpeg = strong_anywhere_jpeg or (
@@ -125,7 +138,12 @@ def classify_record(record: FileRecord, data: bytes) -> Classification:
         jpeg_evidence += 0.15
     jpeg_evidence = min(jpeg_evidence, 0.99)
 
-    if declared_jpeg or byte0_jpeg or internal_jpeg:
+    # Video containers can legitimately embed JPEG frames or thumbnails, and
+    # random/corrupt payloads can contain short JPEG marker collisions. Only a
+    # JPEG signature at byte zero may override a declared video family.
+    jpeg_candidate = declared_jpeg or byte0_jpeg or (internal_jpeg and not declared_video)
+
+    if jpeg_candidate:
         if jpeg_stats["soi_count"] == 0 and jpeg_stats["internal_marker_count"] > 0:
             label = "jpeg_missing_soi_internal_structure"
             confidence = max(jpeg_evidence, 0.82)
@@ -146,7 +164,48 @@ def classify_record(record: FileRecord, data: bytes) -> Classification:
             confidence = max(jpeg_evidence, 0.5)
         return Classification(family="jpeg", label=label, confidence=round(confidence, 4), evidence=evidence)
 
-    inferred_family = record.anywhere_kind if record.anywhere_kind != "unknown" else (record.byte0_kind if record.byte0_kind != "unknown" else record.declared_kind)
+    if record.declared_kind in PACKAGE_KINDS and (record.byte0_kind == "zip" or record.anywhere_kind == "zip"):
+        return Classification(
+            family=record.declared_kind,
+            label=f"{record.declared_kind}_zip_package_candidate",
+            confidence=0.92,
+            evidence=evidence,
+        )
+
+    # Some public variants intentionally share a container signature. Preserve
+    # the declared variant when the extension and container evidence agree;
+    # treating every OLE file as DOC, every TIFF-based camera file as TIFF, or
+    # every ASF container as ASF would make advertised XLS/PPT/RAW/WMV routes
+    # unreachable despite valid suffix evidence.
+    declared_container_aliases = {
+        "doc": {"doc", "xls", "ppt"},
+        "tiff": {"raw"},
+        "asf": {"wmv"},
+    }
+    compatible_declared = declared_container_aliases.get(record.byte0_kind, set())
+    if record.declared_kind in compatible_declared:
+        return Classification(
+            family=str(record.declared_kind),
+            label=f"{record.declared_kind}_{record.byte0_kind}_container_candidate",
+            confidence=0.88,
+            evidence=evidence,
+        )
+
+    if record.declared_kind in TEXT_KINDS and record.byte0_kind in {"unknown", "text"}:
+        confidence = 0.9 if record.byte0_kind == "text" else 0.68
+        return Classification(
+            family=record.declared_kind,
+            label=f"{record.declared_kind}_text_candidate",
+            confidence=confidence,
+            evidence=evidence,
+        )
+
+    if record.byte0_kind != "unknown":
+        inferred_family = record.byte0_kind
+    elif record.anywhere_kind != "unknown":
+        inferred_family = record.anywhere_kind
+    else:
+        inferred_family = record.declared_kind
 
     if inferred_family in ISOBMFF_FAMILIES:
         label = "isobmff_signature_away_from_byte0" if record.byte0_kind == "unknown" and record.anywhere_kind in ISOBMFF_FAMILIES else "isobmff_container_candidate"
@@ -169,6 +228,10 @@ def classify_record(record: FileRecord, data: bytes) -> Classification:
 
     if inferred_family in {"png", "gif", "bmp", "tiff", "webp", "heif", "avif", "jp2", "raw"}:
         return Classification(family=inferred_family, label=f"{inferred_family}_detected_candidate", confidence=0.65, evidence=evidence)
+
+    if inferred_family in {*AUDIO_KINDS, *ARCHIVE_KINDS, *DOCUMENT_KINDS, "text"}:
+        confidence = 0.9 if record.byte0_kind == inferred_family else 0.7
+        return Classification(family=inferred_family, label=f"{inferred_family}_signature_candidate", confidence=confidence, evidence=evidence)
 
     if record.declared_kind:
         return Classification(family=record.declared_kind, label=f"{record.declared_kind}_declared_only", confidence=0.55, evidence=evidence)

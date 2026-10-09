@@ -38,9 +38,9 @@ class BaselineRecoveryEngineV2(RecoveryEngine):
                 provenance=[{"kind": "slice", "offset": offset}],
                 meta={"offset": offset},
             )
-            if candidate.dedupe_hash in seen:
+            if candidate.strategy_hash in seen:
                 return
-            seen.add(candidate.dedupe_hash)
+            seen.add(candidate.strategy_hash)
             candidates.append(candidate)
 
         add("full_file", data, 100, offset=0)
@@ -64,9 +64,9 @@ class BaselineRecoveryEngineV2(RecoveryEngine):
                 provenance=[{"kind": "slice", "offset": offset}],
                 meta={"offset": offset},
             )
-            if candidate.dedupe_hash in seen:
+            if candidate.strategy_hash in seen:
                 return
-            seen.add(candidate.dedupe_hash)
+            seen.add(candidate.strategy_hash)
             candidates.append(candidate)
 
         add("full_file", data, 100, offset=0)

@@ -36,10 +36,24 @@ FLV_SIG = b"FLV"
 MPEG_PS_PACK = b"\x00\x00\x01\xBA"
 JP2_SIG = b"\x00\x00\x00\x0cjP  \r\n\x87\n"
 ASF_HEADER_GUID = bytes.fromhex("3026b2758e66cf11a6d900aa0062ce6c")
+ZIP_LOCAL = b"PK\x03\x04"
+PDF_HEADER = b"%PDF-"
+OLE_CFB = bytes.fromhex("d0cf11e0a1b11ae1")
+SEVEN_Z = bytes.fromhex("377abcaf271c")
+RAR4 = b"Rar!\x1a\x07\x00"
+RAR5 = b"Rar!\x1a\x07\x01\x00"
+FLAC = b"fLaC"
+OGG = b"OggS"
+ID3 = b"ID3"
 
 IMAGE_KINDS = ["jpeg", "png", "gif", "bmp", "tiff", "webp", "heif", "avif", "jp2", "raw"]
 VIDEO_KINDS = ["mp4", "mov", "avi", "mkv", "webm", "mpegts", "mpegps", "flv", "asf", "wmv"]
-ALL_KINDS = IMAGE_KINDS + VIDEO_KINDS
+AUDIO_KINDS = ["wav", "mp3", "flac", "aac", "ogg"]
+TEXT_KINDS = ["text", "markdown", "log", "csv", "json", "xml", "html"]
+ARCHIVE_KINDS = ["zip", "tar", "7z", "rar"]
+PACKAGE_KINDS = ["docx", "docm", "xlsx", "xlsm", "pptx", "pptm", "odt", "ods", "odp"]
+DOCUMENT_KINDS = ["pdf", "rtf", "doc", "xls", "ppt"]
+ALL_KINDS = IMAGE_KINDS + VIDEO_KINDS + AUDIO_KINDS + TEXT_KINDS + ARCHIVE_KINDS + PACKAGE_KINDS + DOCUMENT_KINDS
 
 EXT_TO_KIND = {
     ".jpg": "jpeg",
@@ -80,6 +94,39 @@ EXT_TO_KIND = {
     ".flv": "flv",
     ".asf": "asf",
     ".wmv": "wmv",
+    ".wav": "wav",
+    ".mp3": "mp3",
+    ".flac": "flac",
+    ".aac": "aac",
+    ".ogg": "ogg",
+    ".oga": "ogg",
+    ".txt": "text",
+    ".md": "markdown",
+    ".markdown": "markdown",
+    ".log": "log",
+    ".csv": "csv",
+    ".json": "json",
+    ".xml": "xml",
+    ".html": "html",
+    ".htm": "html",
+    ".zip": "zip",
+    ".tar": "tar",
+    ".7z": "7z",
+    ".rar": "rar",
+    ".docx": "docx",
+    ".docm": "docm",
+    ".xlsx": "xlsx",
+    ".xlsm": "xlsm",
+    ".pptx": "pptx",
+    ".pptm": "pptm",
+    ".odt": "odt",
+    ".ods": "ods",
+    ".odp": "odp",
+    ".pdf": "pdf",
+    ".rtf": "rtf",
+    ".doc": "doc",
+    ".xls": "xls",
+    ".ppt": "ppt",
 }
 
 KIND_TO_PIL_FORMAT = {
@@ -89,6 +136,15 @@ KIND_TO_PIL_FORMAT = {
     "bmp": "BMP",
     "tiff": "TIFF",
     "webp": "WEBP",
+}
+
+IMAGE_OUTPUT_EXT = {
+    "jpeg": ".jpg",
+    "png": ".png",
+    "gif": ".gif",
+    "bmp": ".bmp",
+    "tiff": ".tif",
+    "webp": ".webp",
 }
 
 VIDEO_OUTPUT_EXT = {

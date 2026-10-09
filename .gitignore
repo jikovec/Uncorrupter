@@ -12,3 +12,12 @@ dist/
 
 # Local Obsidian vault settings
 .obsidian/
+
+# Local agent and Spec Kit workflow scaffolding
+.agents/
+.specify/
+
+# Local recovery workspaces, outputs, and ad hoc input samples
+/.uncorrupter-workspace/
+/output/
+/single-input/

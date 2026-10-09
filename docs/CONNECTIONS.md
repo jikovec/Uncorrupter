@@ -1,71 +1,93 @@
 # Connection Map
 
-Tags: #repo/connection-map #agent/orientation #uncorrupter/evidence
+This map links user claims to implementation owners and executable evidence. It is intended to prevent documentation, capabilities, and tests from drifting independently.
 
-This map explains how current docs, source, tests, reports, and handoffs should point at each other. Keep it updated when module boundaries, docs hubs, report locations, or handoff practices change.
+## Claim To Source To Evidence
 
-## Docs To Source
+| Claim or boundary | Source owner | Executable evidence | Narrative evidence |
+| --- | --- | --- | --- |
+| Version `0.4.0` has one source | `__init__.py`, `pyproject.toml` | `test_packaging.py`, CLI `--version` | README, changelog |
+| Sources are immutable and changing inputs fail | `byte_source.py`, `pipeline.py` | `test_budgets_and_byte_source.py`, `test_safe_recovery.py`, `test_run_lifecycle.py` | Security, architecture |
+| Paths are contained and outputs no-clobber/atomic | `paths.py`, `atomic.py`, handlers | `test_atomic_and_paths.py`, `test_archive_handler.py`, `test_safe_recovery.py` | Security, CLI |
+| Resource ceilings are explicit | `budgets.py`, `cli.py`, `atomic.py` | budget, archive, safe-recovery, CLI tests | CLI, current state |
+| External tools are bounded and optionally isolated | `process_runner.py`, `decoders.py` | `test_process_runner.py`, adapter/PDF tests | Security, architecture |
+| Scan, classify, and recover differ | `cli.py`, `pipeline.py` | `test_cli.py` | CLI reference |
+| Goals are explicit | `handlers/base.py`, registry, CLI | handler/capability/CLI tests | README, CLI |
+| Capability claims derive from handlers | `handlers/*`, `capabilities.py` | `test_capabilities.py` | generated capabilities |
+| Public families have mutation evidence | `tests/fixtures.py`, `tests/mutations.py` | `test_mutation_inventory.py` | testing docs, roadmap |
+| Runs persist/resume safely | `db.py`, `pipeline.py`, `cli.py` | `test_db_migrations.py`, `test_run_lifecycle.py`, `test_cli.py` | architecture, CLI |
+| Events/reports are separate and redactable | `events.py`, `reporting.py`, `cli.py` | CLI/lifecycle tests | CLI, security |
+| Ground-truth/false-positive/RSS metrics are explicit | `benchmarking.py`, `cli.py`, `reporting.py` | `test_benchmarking.py`, CLI tests | benchmark schema, verification |
+| Text fidelity and invalid structure are explicit | `handlers/text.py` | `test_text_handler.py` | roadmap |
+| ZIP/TAR extraction is streaming, contained, and bounded | `byte_source.py`, `handlers/archive.py` | `test_archive_handler.py`, `test_streaming_handlers.py` | roadmap, security |
+| Package documents stream parts without executing macros | `byte_source.py`, `handlers/package_document.py` | package/streaming tests | roadmap, security |
+| PDF streaming/reconstruction/qpdf output validation is conservative | `handlers/pdf.py` | PDF/streaming tests | roadmap |
+| Image frame/page loss is not full recovery | `handlers/image.py`, `decoders.py` | `test_image_handlers.py` | capabilities, roadmap |
+| Media tool goals require FFmpeg+ffprobe and exact output validation | `handlers/media.py`, `decoders.py`, `capabilities.py` | capability/media/integration tests | current state, roadmap |
+| 7z/RAR and LibreOffice/soffice Office boundaries are tool/format honest | `handlers/external.py` | `test_external_adapters.py` | capabilities, roadmap |
 
-- [Architecture](architecture/ARCHITECTURE.md) should stay connected to [cli.py](../src/file_uncorrupter/cli.py), [pipeline.py](../src/file_uncorrupter/pipeline.py), [engines](../src/file_uncorrupter/engines/), [decoders.py](../src/file_uncorrupter/decoders.py), [db.py](../src/file_uncorrupter/db.py), and [workspace.py](../src/file_uncorrupter/workspace.py).
-- [CLI reference](api/CLI.md) should stay connected to [cli.py](../src/file_uncorrupter/cli.py) and the console script declaration in [pyproject.toml](../pyproject.toml).
-- [Security](security/SECURITY.md) should stay connected to [decoders.py](../src/file_uncorrupter/decoders.py), [db.py](../src/file_uncorrupter/db.py), local evidence outputs, and the unsupported security properties list.
-- [Testing](testing/VERIFICATION.md) should stay connected to [pyproject.toml](../pyproject.toml) and all current files under [tests](../tests/).
-- [Source map](SOURCE-MAP.md) should stay connected to every current source/test area.
+## Documentation Flow
 
-## Source To Tests
+```mermaid
+flowchart TD
+    Handlers["Registered handler capabilities"] --> Manifest["capabilities command"]
+    Manifest --> Generated["docs/capabilities.generated.md"]
+    Generated --> Drift["test_capabilities.py drift gate"]
+    Source["Source and pyproject"] --> Tests["Unit/integration/package tests"]
+    Tests --> Report["Dated implementation report"]
+    Source --> Current["docs/current-state.md"]
+    Generated --> Current
+    Report --> Current
+    Current --> Readme["README and project overview"]
+    Current --> Handoff["Dated future-agent handoff"]
+    SourceMap["SOURCE-MAP.md"] --> AgentIndex["agent-index.json"]
+    Current --> AgentIndex
+```
 
-- CLI behavior in [cli.py](../src/file_uncorrupter/cli.py) is indirectly covered through recovery and DB-oriented tests; add direct CLI tests if command parsing changes.
-- Intake, signature detection, and kind detection in [intake.py](../src/file_uncorrupter/intake.py), [signature_index.py](../src/file_uncorrupter/signature_index.py), and [constants.py](../src/file_uncorrupter/constants.py) connect to [test_signature_index.py](../tests/test_signature_index.py) and classification/recovery tests.
-- Classification in [classification.py](../src/file_uncorrupter/classification.py) connects to [test_classification.py](../tests/test_classification.py).
-- Candidate engines under [engines](../src/file_uncorrupter/engines/) connect to [test_recovery.py](../tests/test_recovery.py).
-- SQLite persistence in [db.py](../src/file_uncorrupter/db.py) connects to [test_db.py](../tests/test_db.py).
-- Decoder behavior in [decoders.py](../src/file_uncorrupter/decoders.py) connects to [test_recovery.py](../tests/test_recovery.py), with FFmpeg-dependent checks skipped when local tools are unavailable.
+## Handler Registration Chain
 
-## Reports To Implemented Changes
+```text
+constants/signatures
+  -> bounded detection and classification
+  -> handler registry ownership
+  -> capability manifest
+  -> inspect / explicit goal plan / execute
+  -> atomic artifacts
+  -> SQLite typed relations and JSONL events
+  -> final reports
+```
 
-Root reports under [reports](../reports/) should capture validation, implementation evidence, and workflow-specific findings. The root [reports index](../reports/INDEX.md) is the routing surface for these notes.
+Adding an extension only at the constants layer is insufficient. A public variant must have an owner, operation levels, fixtures, safety limits, output semantics, fidelity statement, and tests.
 
-Curated documentation reports under [docs/reports](reports/) preserve documentation reorganizations and historical research. The [curated reports index](reports/INDEX.md) should link archived research and documentation cleanup reports.
+## Run Lifecycle Chain
 
-When a report changes the current understanding of the repo, update:
+```text
+validate paths/config
+  -> create run
+  -> discover/analyze in stable order
+  -> per-file savepoint
+  -> inspect and execute requested goals
+  -> publish and persist evidence
+  -> commit file
+  -> finalize run
+  -> render manifest/CSV/text
+```
 
-- [current-state.md](current-state.md)
-- [AGENT-INDEX.md](AGENT-INDEX.md)
-- [SOURCE-MAP.md](SOURCE-MAP.md)
-- [agent-index.json](agent-index.json)
+Cancellation, fatal configuration, and changed-source handling have explicit branches. A resumed run references prior evidence and uses a new output namespace for reprocessing; it does not overwrite the old run.
 
-## Handoffs To Remaining Work
+## Reports And Handoffs
 
-Use [handoffs](../handoffs/) for notes that a later agent should act on. Keep [handoffs/INDEX.md](../handoffs/INDEX.md) current when adding a handoff.
+| Artifact | What it establishes |
+| --- | --- |
+| `reports/2026-07-26-current-state-and-roadmap-assessment.md` | Pre-stabilization baseline and original gaps. |
+| `reports/2026-08-05-stabilized-multiformat-implementation.md` | Implemented changes, commands, check results, and remaining gates. |
+| `handoffs/2026-07-26-video-jpeg-misclassification-fix.md` | Concurrent classification repair that must remain preserved. |
+| `handoffs/2026-08-05-stabilized-multiformat-recovery.md` | Current continuation and risk boundary. |
 
-A handoff should include:
+## Update Obligations
 
-- date
-- scope
-- current state
-- exact files touched or inspected
-- blockers
-- recommended next commands
-- risks and non-goals
-
-## Workflows And Verification
-
-Supported current checks:
-
-- `python -m json.tool .\docs\agent-index.json`
-- `git diff --check`
-- `python -m pytest`
-
-`python -m pytest` depends on pytest being installed in the active environment. If it is unavailable, record the blocker rather than changing dependencies during a docs-only pass.
-
-There is no documented deployment workflow in this repo. Do not add deployment docs that imply production deploy support.
-
-## Decisions And Roadmap
-
-- [decisions.md](decisions.md) is the current decision log placeholder.
-- [docs/reports/archive/001-deep-research-report.md](reports/archive/001-deep-research-report.md) contains historical research and roadmap-like ideas, but those are not current product commitments.
-- Add future ADRs or decision notes only when a real repo decision is made.
-
-## Machine-Readable Index
-
-[agent-index.json](agent-index.json) mirrors this map in a compact format for agents and scripts. Keep it repo-relative and free of secrets, private local paths, account identifiers, private URLs, and personal data.
+- Capability change: update handler, fixtures/tests, generated capability doc, roadmap/current state, and machine index.
+- CLI/limit/exit change: update parser tests, README, CLI reference, commands, and machine index.
+- Schema/evidence change: update migrations/tests, architecture, source map, and handoff.
+- New format: update constants, detection/classification, handler registry, fixtures/mutations, integration tests, capability docs, security boundaries, and roadmap.
+- Verification change: update the dated report; do not convert local evidence into CI/live/deployment claims.

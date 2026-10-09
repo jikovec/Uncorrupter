@@ -18,6 +18,15 @@ from .constants import (
     TIFF_BE,
     TIFF_LE,
     WEBP,
+    ZIP_LOCAL,
+    PDF_HEADER,
+    OLE_CFB,
+    SEVEN_Z,
+    RAR4,
+    RAR5,
+    FLAC,
+    OGG,
+    ID3,
 )
 from .types import SignatureHit
 
@@ -72,6 +81,8 @@ def _riff_hits(data: bytes, limit_per_type: int) -> list[SignatureHit]:
             hits.append(SignatureHit(family="webp", signature_type="riff_webp", offset=pos, confidence=0.99 if pos == 0 else 0.9))
         elif brand == AVI:
             hits.append(SignatureHit(family="avi", signature_type="riff_avi", offset=pos, confidence=0.98 if pos == 0 else 0.9))
+        elif brand == b"WAVE":
+            hits.append(SignatureHit(family="wav", signature_type="riff_wave", offset=pos, confidence=0.99 if pos == 0 else 0.9))
     return hits
 
 
@@ -148,6 +159,22 @@ def scan_signatures(data: bytes, limit_per_type: int = 24) -> list[SignatureHit]
         hits.append(SignatureHit(family="asf", signature_type="asf_guid", offset=pos, confidence=0.98 if pos == 0 else 0.85))
     for pos in sample_positions(find_all(data, JP2_SIG), limit_per_type):
         hits.append(SignatureHit(family="jp2", signature_type="jp2_sig", offset=pos, confidence=0.99 if pos == 0 else 0.9))
+    for family, signature_type, needle in (
+        ("zip", "zip_local", ZIP_LOCAL),
+        ("pdf", "pdf_header", PDF_HEADER),
+        ("doc", "ole_cfb", OLE_CFB),
+        ("7z", "7z_header", SEVEN_Z),
+        ("rar", "rar4_header", RAR4),
+        ("rar", "rar5_header", RAR5),
+        ("flac", "flac_header", FLAC),
+        ("ogg", "ogg_page", OGG),
+        ("mp3", "id3_header", ID3),
+    ):
+        for pos in sample_positions(find_all(data, needle), limit_per_type):
+            hits.append(SignatureHit(family=family, signature_type=signature_type, offset=pos, confidence=0.99 if pos == 0 else 0.88))
+    for label, bom in (("utf8", b"\xef\xbb\xbf"), ("utf16le", b"\xff\xfe"), ("utf16be", b"\xfe\xff"), ("utf32be", b"\x00\x00\xfe\xff")):
+        if data.startswith(bom):
+            hits.append(SignatureHit(family="text", signature_type=f"bom_{label}", offset=0, confidence=0.99))
 
     hits.extend(_riff_hits(data, limit_per_type))
     hits.extend(_isobmff_hits(data, limit_per_type))

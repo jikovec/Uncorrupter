@@ -1,24 +1,97 @@
 <!-- codex-memory-scaffold:commands -->
 # Commands
 
-## Discovered Commands
-- python -m pip install -e . - explicit README command, source: README.md; detail: README documented command
-- file-uncorrupter - explicit console script, source: pyproject.toml [project.scripts]; detail: dispatches to file_uncorrupter.cli:main
-- file-uncorrupter scan - explicit CLI command, source: README.md and src/file_uncorrupter/cli.py; detail: scan and persist file evidence
-- file-uncorrupter classify - explicit CLI command, source: README.md and src/file_uncorrupter/cli.py; detail: scan, classify, and persist evidence
-- file-uncorrupter recover - explicit CLI command, source: README.md and src/file_uncorrupter/cli.py; detail: recover files into an output directory
-- file-uncorrupter benchmark - explicit CLI command, source: README.md and src/file_uncorrupter/cli.py; detail: recover and optionally export JSON/CSV reports
-- file-uncorrupter report - explicit CLI command, source: README.md and src/file_uncorrupter/cli.py; detail: export reports from an existing run database
-- python -m pytest - explicit README command with pyproject pytest configuration; detail: pytest must be installed in the active Python environment
+## Install And Inspect
 
-## Command Sources Inspected
-- pyproject.toml
-- README.md
-- src/file_uncorrupter/cli.py
-- docs/api/CLI.md
+```powershell
+python -m pip install -e ".[dev]"
+file-uncorrupter --version
+file-uncorrupter --help
+file-uncorrupter capabilities
+file-uncorrupter capabilities --format json
+file-uncorrupter capabilities --format markdown --output .\capabilities.md
+```
 
-## Notes
-- explicit means the command came from a manifest script, README, Makefile, or CI workflow.
-- inferred means the repository shape suggests the command, but it was not directly declared as a script.
-- pytest is configured in pyproject.toml, but pytest itself is not declared as a package dependency.
-- .env and other secret-bearing files were not read.
+## Product Commands
+
+```powershell
+file-uncorrupter scan .\input --recursive --all-files --db .\runs.sqlite3
+file-uncorrupter classify .\input --recursive --all-files --db .\runs.sqlite3
+file-uncorrupter recover .\input .\output --recursive --all-files --goal repair --goal extract --db .\runs.sqlite3
+file-uncorrupter benchmark .\input .\output --recursive --all-files --goal repair --ground-truth .\corpus-ground-truth.json --db .\runs.sqlite3
+file-uncorrupter report --db .\runs.sqlite3 --run-id 1 --output-json .\report.json --output-csv .\attempts.csv --output-text .\report.txt
+```
+
+See [CLI reference](api/CLI.md) before using resume, cancellation, risky layout, replacement-sensitive paths, external tools, or custom budgets.
+
+## Deterministic Local Verification
+
+```powershell
+$env:UNCORRUPTER_DISABLE_EXTERNAL_TOOLS = "1"
+$env:PYTHONDONTWRITEBYTECODE = "1"
+python -m pytest -p no:cacheprovider -q
+python -m compileall -q src tests
+python -m build
+python -m json.tool .\docs\agent-index.json > $null
+git diff --check
+```
+
+Focused governance gate:
+
+```powershell
+python -m pytest -p no:cacheprovider -q tests\test_capabilities.py tests\test_mutation_inventory.py tests\test_packaging.py
+python -m pytest -p no:cacheprovider -q tests\test_streaming_handlers.py tests\test_benchmarking.py
+```
+
+Optional-tool validation is a separate run:
+
+```powershell
+Remove-Item Env:\UNCORRUPTER_DISABLE_EXTERNAL_TOOLS -ErrorAction SilentlyContinue
+python -m pytest -p no:cacheprovider -q
+file-uncorrupter capabilities --format json
+```
+
+Record exact tool identity, result, and skips. Do not merge tool-disabled and tool-present evidence into one claim.
+
+## Capability Baseline Maintenance
+
+The checked baseline is generated with optional tools disabled and compared exactly in tests.
+
+```powershell
+$env:UNCORRUPTER_DISABLE_EXTERNAL_TOOLS = "1"
+file-uncorrupter capabilities --format markdown
+python -m pytest -p no:cacheprovider -q tests\test_capabilities.py
+```
+
+Review and patch `docs/capabilities.generated.md` only when handler truth intentionally changes.
+
+## Local Agent Command
+
+`$deploy [optional context]` is a local-only agent workflow at `.agents/skills/deploy/SKILL.md`. When the user explicitly invokes it, it publishes the active branch to the same-named GitHub branch, waits for remote tests on the exact pushed commit, and may repair task-owned repository CI failures.
+
+It does not authorize:
+
+- changing branches;
+- pull/merge/rebase or force-push;
+- unrelated staging/commits;
+- pull requests, releases, package publication, Pages, or production deployment;
+- workflow dispatch, runner/billing changes, or secret changes.
+
+A push without exact-SHA remote tests is blocked evidence, not a green deployment. Do not invoke `$deploy` during ordinary local implementation unless the user explicitly requests it.
+
+## Command Sources
+
+| Command | Authority |
+| --- | --- |
+| `file-uncorrupter` | `pyproject.toml` console script and `src/file_uncorrupter/cli.py` |
+| `python -m pytest` | `pyproject.toml` dev dependency and pytest config |
+| `python -m build` | `pyproject.toml` build system and dev dependency |
+| capability/doc gates | `tests/test_capabilities.py`, `tests/test_packaging.py` |
+| `$deploy` | local-only `.agents/skills/deploy/SKILL.md` |
+
+## Safety Notes
+
+- Commands in this file are examples, not authorization to mutate Git/remotes or process arbitrary third-party data.
+- Use disposable inputs/outputs for tests.
+- Do not expose secrets through command arguments, logs, reports, or fixtures.
+- Build success is not package publication; workflow definition is not remote execution; push is not deployment.

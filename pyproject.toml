@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "file-uncorrupter"
-version = "0.3.0"
-description = "Offline-first corrupted media recovery framework with evidence tracking, deep JPEG repair, and baseline video salvage."
+dynamic = ["version"]
+description = "Offline-first bounded recovery framework for damaged documents, archives, text, images, audio, and video."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{name = "OpenAI"}]
@@ -13,11 +13,20 @@ dependencies = [
   "Pillow>=10.0.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "build>=1.2",
+  "pytest>=8,<10",
+]
+
 [project.scripts]
 file-uncorrupter = "file_uncorrupter.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "file_uncorrupter.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

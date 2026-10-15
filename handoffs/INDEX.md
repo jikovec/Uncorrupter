@@ -6,6 +6,7 @@ This directory is for future handoff notes when work is incomplete, blocked, def
 
 ## Current Handoffs
 
+- [2026-10-15 local planning publication](2026-10-15-local-planning-publication.md)
 - [2026-10-15 recovery artifact ignore rules](2026-10-15-ignore-recovery-artifacts.md)
 
 ## Naming Convention

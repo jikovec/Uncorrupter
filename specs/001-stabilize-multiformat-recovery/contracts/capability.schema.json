@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "top_level_required": [
+    "schema_version",
+    "application",
+    "application_version",
+    "python",
+    "platform",
+    "capabilities",
+    "quality_gate"
+  ],
+  "capability_required": [
+    "family",
+    "variants",
+    "extensions",
+    "signatures",
+    "operations",
+    "tools",
+    "limits",
+    "encryption",
+    "active_content",
+    "outputs",
+    "fidelity",
+    "fixtures",
+    "availability",
+    "unavailable_reasons",
+    "handler_id"
+  ],
+  "operation_levels": [
+    "none",
+    "baseline",
+    "partial",
+    "validated"
+  ],
+  "operations": [
+    "detect",
+    "inspect",
+    "validate",
+    "repair",
+    "normalize",
+    "extract",
+    "preview",
+    "carve"
+  ],
+  "availability_values": [
+    "available",
+    "partial",
+    "unavailable"
+  ]
+}

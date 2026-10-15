@@ -6,7 +6,7 @@ This directory is for future handoff notes when work is incomplete, blocked, def
 
 ## Current Handoffs
 
-- No handoff notes are present yet.
+- [2026-10-15 recovery artifact ignore rules](2026-10-15-ignore-recovery-artifacts.md)
 
 ## Naming Convention
 

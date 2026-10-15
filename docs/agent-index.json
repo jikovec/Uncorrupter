@@ -1,7 +1,7 @@
 {
   "repo_name": "File Uncorrupter",
   "repo_purpose": "Offline-first Python CLI for scanning, classifying, and recovering damaged visual media with SQLite evidence tracking, JPEG-focused repair strategies, baseline image/video carving, optional FFmpeg-assisted salvage, and JSON/CSV reporting.",
-  "last_reviewed": "2026-10-09",
+  "last_reviewed": "2026-10-15",
   "primary_languages": [
     "Python"
   ],
@@ -33,7 +33,8 @@
     "canonical_skills": "skills/",
     "codex_adapters": ".codex/skills/",
     "claude_adapters": ".claude/skills/",
-    "claude_instructions": "CLAUDE.md"
+    "claude_instructions": "CLAUDE.md",
+    "multiformat_planning_snapshot": "specs/001-stabilize-multiformat-recovery/"
   },
   "docs_entry_points": [
     "docs/INDEX.md",
@@ -230,7 +231,8 @@
     "Historical reports and release artifacts are evidence, not current implementation truth.",
     "No deployment workflow is documented in this repo.",
     "Mind-Seed registry and memory bindings are unverified; no enrollment or memory mutation is implied.",
-    "Native discovery is provider/version dependent; static link validation is not proof of a loaded session."
+    "Native discovery is provider/version dependent; static link validation is not proof of a loaded session.",
+    "The multi-format planning snapshot retains historical task and validation claims; it does not prove implementation or test execution on main. See handoffs/2026-10-15-local-planning-publication.md."
   ],
   "omitted_artifacts": [
     {

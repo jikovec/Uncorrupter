@@ -27,8 +27,10 @@ verification recipe for the current default branch.
   no license terms or Python code content changed.
 - Both JSON contract files and `docs/agent-index.json` parse successfully.
 - Relative Markdown links in the planning snapshot and this handoff resolve.
-- Diff whitespace is checked with Git's `cr-at-eol` setting because CRLF is an
-  explicitly retained part of this change.
+- Diff whitespace with Git's `cr-at-eol` setting reports one existing blank line
+  at EOF in `checklists/recovery-quality.md`. That source formatting is retained
+  with the original bytes; the other nineteen changed paths pass the check.
+- The toolkit validator and all ten validator regression tests pass.
 - Recovery tests are not required for documentation and line-ending-only changes.
   Historical test claims in the snapshot have not been rerun by this publication.
 
